@@ -39,12 +39,26 @@ from typing import Any, Dict, List, Optional, Tuple
 CST = timezone(timedelta(hours=8))
 UA_BASE = "HotelBoardBot/1.0 (+CONTACT_EMAIL)"
 
+# 导航/无意义链接黑名单（标题命中即排除，防止导航项混入）
+NAV_BLACKLIST = ["开发加盟", "新闻资讯", "酒店预订", "其他地区", "更多", "联系我们", "关于我们",
+                 "登录", "注册", "加入我们", "人才招聘", "Icon", "图标", "返回首页", "首页",
+                 "媒体中心", "投资者关系", "English", "En", "品牌介绍", "集团简介"]
 # 媒体源需要过滤的类别关键词（标题命中即不入库）
 MEDIA_DROP = ["人事变动", "财报", "行业点评", "招聘", "任命", "业绩", "白皮书", "榜单",
-              "专访", "峰会", "论坛", "白皮书发布"]
+              "专访", "峰会", "论坛", "白皮书发布", "获奖", "奖项", "代言人", "携手", "合作发布",
+              "会员", "礼遇", "忠诚度", "黑珍珠", "点评"]
 # 媒体源需要保留的项目类关键词（标题命中任一即候选）
 MEDIA_KEEP = ["签约", "落地", "拟建", "开业", "物业合作", "新项目", "开工", "奠基", "进驻",
-              "品牌入驻", "双品牌", "筹建"]
+              "品牌入驻", "双品牌", "筹建", "启幕", "启航", "落子", "落户", "揭幕", "剪彩",
+              "首家", "首店", "首秀", "翻新", "焕新", "重生"]
+# 项目类动作词（集团官网/媒体通用：标题命中任一即视为项目公告候选）
+PROJECT_VERBS = ["签约", "开业", "启幕", "启航", "落子", "落户", "进驻", "入驻", "开工",
+                 "奠基", "拟建", "在建", "筹建", "揭幕", "剪彩", "焕新", "重生", "首店",
+                 "首家", "首秀", "亮相", "登场", "里程碑", "项目"]
+# 英文项目类动作词（用于英文官网源）
+PROJECT_VERBS_EN = ["opening", "opens", "signing", "signs", "debut", "debuts", "grand opening",
+                    "property", "hotel", "development", "milestone", "growth", "expansion",
+                    "first hotel", "new hotel"]
 # 中国地区判定关键词（标题/摘要/正文命中任一即视为中国项目，用于无 AI 时的规则判定）
 CHINA_HINTS = ["中国", "大中华区", "北京", "上海", "广州", "深圳", "成都", "杭州", "重庆",
                "武汉", "西安", "南京", "苏州", "天津", "长沙", "郑州", "青岛", "宁波", "厦门",
@@ -220,7 +234,7 @@ def set_ai_extractor(fn) -> None:
     _ai_extractor = fn
 
 
-def extract_links_via_regex(html: str, base_url: str) -> List[Dict[str, str]]:
+def extract_links_via_regex(html: str, base_url: str, language: str = "zh") -> List[Dict[str, str]]:
     """
     规则版列表页解析（无 CSS 选择器时使用，作为 AI 探测前的最低成本回退）。
     提取 <a> 标题 + href，供后续去重与详情页处理。
@@ -231,9 +245,13 @@ def extract_links_via_regex(html: str, base_url: str) -> List[Dict[str, str]]:
     for m in re.finditer(r"<a[^>]+href=[\"']([^\"']+)[\"'][^>]*>(.*?)</a>", html, re.S | re.I):
         href, text = m.group(1), re.sub(r"<[^>]+>", "", m.group(2)).strip()
         text = re.sub(r"\s+", " ", text).strip()
+        # 清理前导序号/日期数字（如 "13 香港夏利酒店..."）
+        text = re.sub(r"^\d{1,3}\s+", "", text).strip()
         if len(text) < 4:
             continue
         if not re.search(r"新闻|公告|签约|开业|酒店|opening|signing|hotel|release|news", text, re.I):
+            continue
+        if not is_project_candidate(text, language):
             continue
         url = build_absolute(href, base_url)
         if url in seen:
@@ -261,6 +279,19 @@ def is_media_keep(title: str) -> bool:
         if keep in t:
             return True
     return False
+
+
+def is_project_candidate(title: str, language: str = "zh") -> bool:
+    """项目公告候选判定：导航/无意义标题直接排除；命中项目动作词才算候选。"""
+    t = title.strip()
+    if not t or len(t) < 4:
+        return False
+    for nav in NAV_BLACKLIST:
+        if nav.lower() in t.lower():
+            return False
+    verbs = PROJECT_VERBS_EN if language == "en" else PROJECT_VERBS
+    tl = t.lower()
+    return any(v in tl for v in verbs)
 
 
 class SiteCrawler:
@@ -333,7 +364,7 @@ class SiteCrawler:
                 log(f"[{sid}] 检测到 JS 动态渲染页面（文本过短/空壳），直接跳过，不消耗积分", "js")
                 return
 
-            items = extract_links_via_regex(html, list_url)
+            items = extract_links_via_regex(html, list_url, src.get("language", "zh"))
             if not items:
                 log(f"[{sid}] 第 {page} 页未解析到条目，停止翻页", "warn")
                 break
@@ -352,8 +383,9 @@ class SiteCrawler:
             for it in items:
                 self.process_item(src, it)
 
-        self.site_stats[sid] = {"hits": page_hits, "kept": 0, "filtered_overseas": 0, "filtered_media": 0}
-        log(f"[{sid}] 完成：命中 {page_hits} 条", "ok")
+        st = self.site_stats.setdefault(sid, {"hits": 0, "kept": 0, "filtered_overseas": 0, "filtered_media": 0})
+        st["hits"] = page_hits
+        log(f"[{sid}] 完成：命中 {page_hits} 条，收录 {st['kept']}，海外过滤 {st['filtered_overseas']}，媒体过滤 {st['filtered_media']}", "ok")
 
     def process_item(self, src: Dict[str, Any], it: Dict[str, str]) -> None:
         sid = src.get("id", "?")
