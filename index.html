@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>全国酒店项目情报官 · hotel-board</title>
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
+<!--
+  说明（StatiCrypt 兼容）：
+  - 本页面为纯静态单文件，CSS/JS 全部内联，无外部依赖。
+  - 加密规则：只有修改本文件后需要重新执行 StatiCrypt 加密；config/ 与 data/ 下的 json 独立更新，无需重新加密。
+  - CSP 中 script-src 保留 'unsafe-inline'，用于兼容 StatiCrypt 解密脚本注入，请勿移除。
+-->
+<style>
+:root{
+  --canvas:#f5f2ec;
+  --surface:#ffffff;
+  --surface-2:#efece4;
+  --ink:#1d2a29;
+  --ink-2:#55625f;
+  --ink-3:#8a9490;
+  --line:#e2ddd2;
+  --brand:#123b3a;
+  --brand-2:#1c5552;
+  --brand-ink:#ffffff;
+  --accent:#b8892b;
+  --accent-ink:#2a2008;
+  --ok:#2e7d5b;
+  --warn:#b06a1f;
+  --bad:#a8483a;
+  --info:#35618f;
+  --radius:10px;
+  --radius-sm:7px;
+  --shadow:0 1px 2px rgba(29,42,41,.06),0 8px 24px -18px rgba(29,42,41,.25);
+  --font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --focus:#0f7a70;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--canvas);color:var(--ink);
+  font-family:var(--font);font-size:15px;line-height:1.6;
+}
+a{color:var(--brand-2);text-decoration:underline;text-underline-offset:2px}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:3px solid color-mix(in srgb,var(--focus) 45%,transparent);outline-offset:2px;border-radius:4px;
+}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ===== 顶栏 ===== */
+.topbar{
+  background:linear-gradient(120deg,var(--brand) 0%,var(--brand-2) 100%);
+  color:var(--brand-ink);padding:clamp(18px,4vw,30px) clamp(16px,4vw,40px) 22px;
+}
+.topbar-inner{max-width:1240px;margin:0 auto}
+.brand-row{display:flex;flex-wrap:wrap;align-items:center;gap:14px;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-mark{
+  width:44px;height:44px;flex:none;border-radius:12px;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;color:#fff;
+}
+.brand h1{margin:0;font-size:clamp(19px,3vw,25px);line-height:1.25;letter-spacing:.01em}
+.brand .sub{color:rgba(255,255,255,.78);font-size:13px;margin-top:2px}
+.meta-strip{
+  display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:rgba(255,255,255,.9);
+  margin-top:16px;border-top:1px solid rgba(255,255,255,.16);padding-top:12px;
+}
+.meta-strip b{font-weight:600}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#9fd8b8;margin-right:5px;vertical-align:1px}
+
+/* ===== 主体 ===== */
+.wrap{max-width:1240px;margin:0 auto;padding:clamp(16px,3vw,28px) clamp(16px,4vw,40px) 48px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+
+/* ===== 数据源区 ===== */
+.source-bar{padding:14px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.source-bar .hint{font-size:13px;color:var(--ink-2)}
+.source-actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{
+  font:inherit;font-size:13.5px;line-height:1;padding:10px 14px;border-radius:var(--radius-sm);
+  border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;
+  transition:transform .12s ease,opacity .12s ease,background .12s ease;
+}
+.btn:hover{background:var(--surface-2)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.primary:hover{background:var(--brand-2)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--brand-2)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.url-form{display:none;padding:0 16px 14px;border-bottom:1px dashed var(--line)}
+.url-form.open{display:block}
+.url-form label{display:block;font-size:13px;color:var(--ink-2);margin-bottom:6px}
+.url-row{display:flex;gap:8px;flex-wrap:wrap}
+.url-row input{
+  flex:1 1 320px;font:inherit;font-size:13.5px;padding:9px 12px;border:1px solid var(--line);
+  border-radius:var(--radius-sm);background:var(--surface);color:var(--ink);
+}
+.url-row .btn{white-space:nowrap}
+.note{margin-top:10px;font-size:12.5px;color:var(--ink-3)}
+.hidden{display:none!important}
+
+/* ===== 统计 ===== */
+.stats{margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;box-shadow:var(--shadow);
+}
+.stat .num{font-size:clamp(22px,3vw,30px);font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat .lbl{font-size:12.5px;color:var(--ink-2);margin-top:4px}
+.stat .bar{height:5px;border-radius:3px;background:var(--surface-2);margin-top:10px;overflow:hidden}
+.stat .bar i{display:block;height:100%;border-radius:3px;background:var(--accent)}
+
+/* ===== 筛选 ===== */
+.filter-panel{margin-top:16px;padding:16px}
+.filter-panel h2{margin:0 0 12px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px 14px}
+.field label{display:block;font-size:12.5px;color:var(--ink-2);margin-bottom:5px}
+.field input,.field select{
+  width:100%;font:inherit;font-size:13.5px;padding:8px 10px;border:1px solid var(--line);
+  border-radius:var(--radius-sm);background:var(--surface);color:var(--ink);
+}
+.field .range{display:flex;align-items:center;gap:6px}
+.field .range input{min-width:0}
+.range-sep{color:var(--ink-3);font-size:12px}
+.filter-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+
+/* ===== 结果 ===== */
+.result-head{
+  margin-top:20px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;
+}
+.result-head h2{margin:0;font-size:16px;font-weight:700}
+.result-head .count{font-size:13px;color:var(--ink-2)}
+.sort-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);flex-wrap:wrap}
+.sort-row select{
+  font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--ink);
+}
+.list{margin-top:12px;display:flex;flex-direction:column;gap:12px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.card-top{padding:14px 16px 10px;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-start;justify-content:space-between}
+.card-title{min-width:0;flex:1 1 280px}
+.card-title h3{margin:0;font-size:16.5px;line-height:1.35;font-weight:700}
+.card-title .brand-line{font-size:13px;color:var(--ink-2);margin-top:3px}
+.scores{display:flex;gap:8px;flex:none}
+.score{border:1px solid var(--line);border-radius:var(--radius-sm);padding:6px 10px;text-align:center;min-width:74px;background:var(--surface)}
+.score .v{font-size:17px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.score .k{font-size:11px;color:var(--ink-2);margin-top:1px}
+.cred-hi .v{color:var(--ok)} .cred-mid .v{color:var(--warn)} .cred-lo .v{color:var(--bad)}
+.lead-hi .v{color:var(--accent-ink)} .lead-hi{background:#f7edd8;border-color:#e6d3a2}
+
+.badges{padding:0 16px 8px;display:flex;flex-wrap:wrap;gap:6px}
+.badge{
+  font-size:12px;line-height:1;padding:5px 9px;border-radius:20px;border:1px solid var(--line);
+  background:var(--surface-2);color:var(--ink-2);white-space:nowrap;
+}
+.badge.stage-p{border-color:#e6d3a2;background:#f7edd8;color:#7a5a10}
+.badge.stage-c{border-color:#c7d7ec;background:#e9f1fb;color:#31567f}
+.badge.stage-t{border-color:#bfe0d2;background:#e6f4ed;color:#1f6b4c}
+.badge.stage-o{border-color:#d9d6ce;background:#f0ede7;color:#5c5a52}
+.badge.tier-lux{border-color:#d9c08a;background:#faf0d8;color:#7a5a10}
+.badge.status-ok{border-color:#bfe0d2;background:#e6f4ed;color:#1f6b4c}
+.badge.status-wait{border-color:#e6d3a2;background:#f7edd8;color:#7a5a10}
+.badge.status-doubt{border-color:#e8cbc5;background:#f9ece8;color:#8a3d31}
+
+.card-body{padding:2px 16px 12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px 16px}
+.fact{font-size:13.5px;color:var(--ink-2);min-width:0}
+.fact b{color:var(--ink);font-weight:600}
+.fact .val{font-weight:500;color:var(--ink)}
+.fact-missing{color:var(--ink-3)}
+
+details.sources{margin-top:8px}
+details.sources summary{cursor:pointer;font-size:13px;color:var(--brand-2);padding:8px 16px 10px;user-select:none}
+details.sources .src-list{padding:0 16px 14px;display:flex;flex-direction:column;gap:6px}
+.src-item{font-size:13px;color:var(--ink-2)}
+.src-item .src-meta{display:block;font-size:12px;color:var(--ink-3);margin-top:1px}
+
+/* ===== 空/加载/错误 ===== */
+.empty,.loading,.error{padding:42px 20px;text-align:center;color:var(--ink-2)}
+.empty .big{font-size:38px;line-height:1;margin-bottom:10px}
+.empty h3{margin:0 0 6px;font-size:16px;color:var(--ink)}
+.empty p{margin:0 auto 14px;max-width:520px;font-size:13.5px}
+.empty .actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.spinner{
+  width:30px;height:30px;border:3px solid var(--surface-2);border-top-color:var(--brand);
+  border-radius:50%;margin:0 auto 12px;animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error .err-code{font-family:var(--mono);font-size:12px;color:var(--bad);word-break:break-all;margin-top:8px}
+
+footer{max-width:1240px;margin:0 auto;padding:0 clamp(16px,4vw,40px) 40px;font-size:12.5px;color:var(--ink-3)}
+footer .disclaimer{
+  background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);
+  border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;
+}
+footer .foot-links{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between}
+
+@media print{
+  body{background:#fff;font-size:12px}
+  .topbar{background:var(--brand);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .source-bar,.filter-panel,.filter-actions,.sort-row,.empty .actions,.foot-links{display:none!important}
+  .card{box-shadow:none;break-inside:avoid}
+  details.sources[open] summary{margin-bottom:4px}
+  .badge,.score{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  a{color:inherit;text-decoration:none}
+  a[href]::after{content:" (" attr(href) ")";font-size:10px;color:var(--ink-3)}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-row">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="酒店情报"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h6"/></svg>
+        </span>
+        <div>
+          <h1>全国酒店项目情报官</h1>
+          <div class="sub">公开信息源 · AI 抽取 · 真实性分析 · 线索价值评分</div>
+        </div>
+      </div>
+      <div class="meta-strip" role="status">
+        <span><span class="status-dot"></span><b id="meta-state">等待数据</b></span>
+        <span>项目总数 <b id="meta-total">0</b></span>
+        <span>数据更新时间 <b id="meta-updated">—</b></span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="panel source-bar" aria-label="数据源">
+    <div class="hint">数据默认读取同仓库 <code>data/hotels.json</code>；采集配置见 <code>config/sites-config.json</code>。</div>
+    <div class="source-actions">
+      <button class="btn ghost" type="button" id="btn-source">配置数据源</button>
+      <button class="btn" type="button" id="btn-import">导入 JSON</button>
+      <button class="btn" type="button" id="btn-demo">载入演示数据</button>
+      <button class="btn primary" type="button" id="btn-reload">刷新数据</button>
+    </div>
+  </section>
+
+  <section class="panel url-form" id="url-form" aria-label="数据源配置">
+    <label for="gh-url">数据地址（默认 data/hotels.json，也可填远程 JSON）</label>
+    <div class="url-row">
+      <input type="url" id="gh-url" placeholder="data/hotels.json">
+      <button class="btn primary" type="button" id="btn-apply-url">加载</button>
+      <button class="btn" type="button" id="btn-cancel-url">取消</button>
+    </div>
+    <div class="note">提示：本页为纯静态，无后端；数据需为酒店项目 JSON 数组，字段定义见 README。</div>
+    <div class="hidden">
+      <label for="import-area" style="margin-top:12px">粘贴 JSON（酒店项目数组）</label>
+      <textarea id="import-area" rows="6" style="width:100%;font:inherit;font-size:13px;padding:9px 12px;border:1px solid var(--line);border-radius:var(--radius-sm)"></textarea>
+      <button class="btn primary" type="button" id="btn-apply-import" style="margin-top:8px">导入</button>
+    </div>
+  </section>
+
+  <section class="stats" aria-label="统计概览">
+    <div class="stat"><div class="num" id="st-total">0</div><div class="lbl">项目总数</div></div>
+    <div class="stat"><div class="num" id="st-high">0</div><div class="lbl">高价值线索（≥70）</div><div class="bar"><i id="st-high-bar" style="width:0%"></i></div></div>
+    <div class="stat"><div class="num" id="st-cred">0</div><div class="lbl">高可信（≥80）</div><div class="bar"><i id="st-cred-bar" style="width:0%;background:var(--ok)"></i></div></div>
+    <div class="stat"><div class="num" id="st-cities">0</div><div class="lbl">覆盖城市数</div></div>
+  </section>
+
+  <section class="panel filter-panel" aria-label="筛选条件">
+    <h2>查询筛选</h2>
+    <div class="filter-grid">
+      <div class="field" style="grid-column:span 2">
+        <label for="f-keyword">关键词（名称 / 品牌 / 集团 / 城市）</label>
+        <input type="search" id="f-keyword" placeholder="例如：丽思卡尔顿 / 武汉 / 在建">
+      </div>
+      <div class="field">
+        <label for="f-city">城市</label>
+        <input type="text" id="f-city" placeholder="全部城市">
+      </div>
+      <div class="field">
+        <label for="f-stage">阶段</label>
+        <select id="f-stage">
+          <option value="">全部阶段</option>
+          <option value="拟建">拟建 / 签约</option>
+          <option value="在建">在建</option>
+          <option value="试营业">试营业</option>
+          <option value="已开业">已开业</option>
+          <option value="待确认">待确认</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-tier">档次</label>
+        <select id="f-tier">
+          <option value="">全部档次</option>
+          <option value="奢华">奢华</option>
+          <option value="高端">高端</option>
+          <option value="中高端">中高端</option>
+          <option value="中端">中端</option>
+          <option value="经济型">经济型</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-status">状态</label>
+        <select id="f-status">
+          <option value="">全部状态</option>
+          <option value="已核实">已核实</option>
+          <option value="待核实">待核实</option>
+          <option value="存疑">存疑</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-inv-min">投资额（亿元）</label>
+        <div class="range">
+          <input type="number" id="f-inv-min" min="0" step="0.1" placeholder="最低">
+          <span class="range-sep">–</span>
+          <input type="number" id="f-inv-max" min="0" step="0.1" placeholder="最高">
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-rooms-min">客房数（间）</label>
+        <div class="range">
+          <input type="number" id="f-rooms-min" min="0" step="1" placeholder="最低">
+          <span class="range-sep">–</span>
+          <input type="number" id="f-rooms-max" min="0" step="1" placeholder="最高">
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-cred">最低可信度</label>
+        <input type="number" id="f-cred" min="0" max="100" step="1" placeholder="0-100">
+      </div>
+      <div class="field">
+        <label for="f-lead">最低线索价值</label>
+        <input type="number" id="f-lead" min="0" max="100" step="1" placeholder="0-100">
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn primary" type="button" id="btn-reset">重置筛选</button>
+      <button class="btn ghost" type="button" id="btn-copy">复制当前结果摘要</button>
+    </div>
+  </section>
+
+  <section aria-label="查询结果">
+    <div class="result-head">
+      <h2>项目列表</h2>
+      <div class="count" id="result-count">共 0 条</div>
+      <div class="sort-row">
+        <label for="f-sort">排序</label>
+        <select id="f-sort">
+          <option value="lead">线索价值（高→低）</option>
+          <option value="cred">可信度（高→低）</option>
+          <option value="inv">投资额（高→低）</option>
+          <option value="rooms">客房数（高→低）</option>
+          <option value="updated">更新时间（新→旧）</option>
+        </select>
+      </div>
+    </div>
+    <div class="list" id="list"></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="disclaimer">⚠️ 本页面数据来自公开信息源的自动化采集与 AI 抽取，仅供决策参考，<strong>以官方公告为准</strong>。单源信息一律标注「待核实」。</div>
+  <div class="foot-links">
+    <span>全国酒店项目情报官 · 每晚 23:30 自动更新</span>
+    <span>数据存储：data/hotels.json · 采集配置：config/sites-config.json</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+var LS_URL = "hotelintel.ghUrl";
+var state = { data: [], source: "none", updated: null, sort: "lead" };
+var $ = function(id){ return document.getElementById(id); };
+var listEl = $("list");
+var DEMO_KEY = "hotelintel.demo.v1";
+
+function demoData(){
+  var cached = null;
+  try { cached = JSON.parse(localStorage.getItem(DEMO_KEY)); } catch(e){}
+  if (cached && Array.isArray(cached)) return cached;
+  var now = new Date().toISOString();
+  var d = [
+    {
+      id:"demo-0001", name:"示例·滨江国际酒店（演示数据）", name_en:"Demo Riverside International Hotel",
+      brand:"示例品牌", group:"示例集团", stage:"拟建", tier:"高端", chain_type:"国际连锁",
+      province:"示例省", city:"示例市", district:"滨江区", address:"示例大道 88 号",
+      rooms:280, investment_yi:6.5, building_area_wan:4.2, owner:"示例置业", operator:"示例管理",
+      management_mode:"委托管理", expected_open:"2028-06", actual_open:"",
+      milestones:["签约","规划公示"], tags:["签约","高端","投资"],
+      sources:[], credibility:72, lead_score:86, status:"待核实",
+      remark:"演示数据，非真实情报", created_at:now, updated_at:now, version:1
+    },
+    {
+      id:"demo-0002", name:"示例·云岭度假酒店（演示数据）", name_en:"",
+      brand:"", group:"", stage:"在建", tier:"中高端", chain_type:"国内连锁",
+      province:"示例省", city:"示例市", district:"云岭镇", address:"",
+      rooms:180, investment_yi:3.2, building_area_wan:2.6, owner:"示例文旅", operator:"",
+      management_mode:"自营", expected_open:"2027-12", actual_open:"",
+      milestones:["开工"], tags:["在建","度假"],
+      sources:[], credibility:65, lead_score:74, status:"待核实",
+      remark:"演示数据，非真实情报", created_at:now, updated_at:now, version:1
+    },
+    {
+      id:"demo-0003", name:"示例·中心商务酒店（演示数据）", name_en:"",
+      brand:"示例快捷", group:"", stage:"已开业", tier:"中端", chain_type:"国内连锁",
+      province:"示例省", city:"示例市", district:"中心区", address:"中心路 1 号",
+      rooms:220, investment_yi:1.8, building_area_wan:1.5, owner:"", operator:"示例运营",
+      management_mode:"特许经营", expected_open:"2025-09", actual_open:"2026-03",
+      milestones:["试营业","开业"], tags:["开业","中端"],
+      sources:[], credibility:88, lead_score:55, status:"已核实",
+      remark:"演示数据，非真实情报", created_at:now, updated_at:now, version:1
+    }
+  ];
+  try { localStorage.setItem(DEMO_KEY, JSON.stringify(d)); } catch(e){}
+  return d;
+}
+
+/* ---------- 渲染 ---------- */
+function esc(s){
+  return String(s == null ? "" : s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+function stageClass(st){
+  var m = { "拟建":"stage-p", "签约":"stage-p", "在建":"stage-c", "试营业":"stage-t", "已开业":"stage-o" };
+  return m[st] || "";
+}
+function tierClass(t){ return t === "奢华" ? "tier-lux" : ""; }
+function statusClass(s){
+  return s === "已核实" ? "status-ok" : (s === "待核实" ? "status-wait" : (s === "存疑" ? "status-doubt" : ""));
+}
+function credClass(c){ return c >= 80 ? "cred-hi" : (c >= 60 ? "cred-mid" : "cred-lo"); }
+function fmtNum(v){
+  if (v === null || v === undefined || v === "") return "—";
+  return Number(v).toLocaleString("zh-CN", {maximumFractionDigits:1});
+}
+function fact(label, val, unit){
+  if (val === null || val === undefined || val === "") {
+    return '<div class="fact"><b>'+esc(label)+'</b>：<span class="fact-missing">未知</span></div>';
+  }
+  return '<div class="fact"><b>'+esc(label)+'</b>：<span class="val">'+esc(val)+(unit?esc(unit):"")+'</span></div>';
+}
+
+function renderSources(sources){
+  if (!Array.isArray(sources) || !sources.length) {
+    return '<div class="src-item">暂无来源链接（演示数据或来源待补录）</div>';
+  }
+  return sources.map(function(s){
+    var title = (s && s.title) ? s.title : "来源";
+    var url = s && s.url;
+    var meta = [];
+    if (s && s.publish_date) meta.push("发布 " + esc(s.publish_date));
+    if (s && s.type) meta.push(esc(s.type));
+    if (s && s.authority !== undefined && s.authority !== null) meta.push("权威度 " + esc(s.authority));
+    var link;
+    if (url && /^https?:\/\//i.test(url)) {
+      link = '<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(title)+'</a>';
+    } else {
+      link = esc(title);
+    }
+    return '<div class="src-item">'+link+'<span class="src-meta">'+meta.join(" · ")+'</span></div>';
+  }).join("");
+}
+
+function cardHtml(h){
+  var st = h.stage || "待确认";
+  var cred = (h.credibility !== undefined && h.credibility !== null) ? Number(h.credibility) : null;
+  var lead = (h.lead_score !== undefined && h.lead_score !== null) ? Number(h.lead_score) : null;
+  var loc = [h.province, h.city, h.district].filter(Boolean).join("·") || "地区未知";
+  var brandLine = [];
+  if (h.brand) brandLine.push(esc(h.brand));
+  if (h.group) brandLine.push("· " + esc(h.group));
+  if (h.chain_type) brandLine.push("· " + esc(h.chain_type));
+
+  var badges = [];
+  badges.push('<span class="badge '+stageClass(st)+'">'+esc(st)+'</span>');
+  if (h.tier) badges.push('<span class="badge '+tierClass(h.tier)+'">'+esc(h.tier)+'</span>');
+  if (h.status) badges.push('<span class="badge '+statusClass(h.status)+'">'+esc(h.status)+'</span>');
+  if (Array.isArray(h.tags)) h.tags.slice(0,5).forEach(function(t){ badges.push('<span class="badge">'+esc(t)+'</span>'); });
+
+  var facts = [];
+  facts.push(fact("城市", loc));
+  facts.push(fact("客房数", fmtNum(h.rooms), " 间"));
+  facts.push(fact("投资额", h.investment_yi === null || h.investment_yi === undefined || h.investment_yi === "" ? "" : h.investment_yi, " 亿元"));
+  facts.push(fact("建筑面积", h.building_area_wan === null || h.building_area_wan === undefined || h.building_area_wan === "" ? "" : h.building_area_wan, " 万㎡"));
+  facts.push(fact("业主", h.owner));
+  facts.push(fact("运营方", h.operator));
+  facts.push(fact("管理模式", h.management_mode));
+  facts.push(fact("预计开业", h.expected_open));
+  facts.push(fact("实际开业", h.actual_open));
+  if (h.address) facts.push(fact("地址", h.address));
+  if (h.milestones && h.milestones.length) facts.push(fact("里程碑", h.milestones.join(" → ")));
+  if (h.remark) facts.push(fact("备注", h.remark));
+  facts.push(fact("版本", h.version !== undefined ? h.version : 1));
+  facts.push(fact("更新时间", h.updated_at ? String(h.updated_at).slice(0,10) : ""));
+
+  return '<article class="card">' +
+    '<div class="card-top">' +
+      '<div class="card-title"><h3>'+esc(h.name || "未命名项目")+'</h3>' +
+      (h.name_en ? '<div class="brand-line">'+esc(h.name_en)+'</div>' : '') +
+      (brandLine.length ? '<div class="brand-line">'+brandLine.join(" ")+'</div>' : '') +
+      '</div>' +
+      '<div class="scores">' +
+        '<div class="score '+credClass(cred)+'"><div class="v">'+(cred===null?"—":cred)+'</div><div class="k">可信度</div></div>' +
+        '<div class="score '+(lead>=70?"lead-hi":"")+'"><div class="v">'+(lead===null?"—":lead)+'</div><div class="k">线索价值</div></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="badges">'+badges.join("")+'</div>' +
+    '<div class="card-body">'+facts.join("")+'</div>' +
+    '<details class="sources"><summary>来源（'+((h.sources&&h.sources.length)||0)+'）</summary><div class="src-list">'+renderSources(h.sources)+'</div></details>' +
+  '</article>';
+}
+
+function filterData(){
+  var kw = ($("f-keyword").value || "").trim().toLowerCase();
+  var city = ($("f-city").value || "").trim().toLowerCase();
+  var stage = $("f-stage").value;
+  var tier = $("f-tier").value;
+  var status = $("f-status").value;
+  var invMin = parseFloat($("f-inv-min").value);
+  var invMax = parseFloat($("f-inv-max").value);
+  var roomsMin = parseFloat($("f-rooms-min").value);
+  var roomsMax = parseFloat($("f-rooms-max").value);
+  var credMin = parseFloat($("f-cred").value);
+  var leadMin = parseFloat($("f-lead").value);
+
+  return state.data.filter(function(h){
+    if (kw) {
+      var hay = [h.name,h.name_en,h.brand,h.group,h.city,h.province,h.address].filter(Boolean).join(" ").toLowerCase();
+      if (hay.indexOf(kw) === -1) return false;
+    }
+    if (city) {
+      var c = [h.city,h.province].filter(Boolean).join(" ").toLowerCase();
+      if (c.indexOf(city) === -1) return false;
+    }
+    if (stage && (h.stage||"待确认") !== stage) return false;
+    if (tier && h.tier !== tier) return false;
+    if (status && h.status !== status) return false;
+    var inv = parseFloat(h.investment_yi);
+    if (!isNaN(inv)) {
+      if (!isNaN(invMin) && inv < invMin) return false;
+      if (!isNaN(invMax) && inv > invMax) return false;
+    }
+    var rooms = parseFloat(h.rooms);
+    if (!isNaN(rooms)) {
+      if (!isNaN(roomsMin) && rooms < roomsMin) return false;
+      if (!isNaN(roomsMax) && rooms > roomsMax) return false;
+    }
+    var cred = parseFloat(h.credibility);
+    if (!isNaN(credMin) && !isNaN(cred) && cred < credMin) return false;
+    if (!isNaN(credMin) && isNaN(cred)) return false;
+    var lead = parseFloat(h.lead_score);
+    if (!isNaN(leadMin) && !isNaN(lead) && lead < leadMin) return false;
+    if (!isNaN(leadMin) && isNaN(lead)) return false;
+    return true;
+  });
+}
+
+function sortData(arr){
+  var k = state.sort;
+  var key = {
+    lead: function(h){ return isNaN(parseFloat(h.lead_score)) ? -1 : parseFloat(h.lead_score); },
+    cred: function(h){ return isNaN(parseFloat(h.credibility)) ? -1 : parseFloat(h.credibility); },
+    inv:  function(h){ return isNaN(parseFloat(h.investment_yi)) ? -1 : parseFloat(h.investment_yi); },
+    rooms:function(h){ return isNaN(parseFloat(h.rooms)) ? -1 : parseFloat(h.rooms); },
+    updated:function(h){ return new Date(h.updated_at || 0).getTime(); }
+  }[k] || function(){return 0;};
+  return arr.slice().sort(function(a,b){ return key(b) - key(a); });
+}
+
+function renderStats(all){
+  $("st-total").textContent = all.length;
+  var high = all.filter(function(h){ return parseFloat(h.lead_score) >= 70; }).length;
+  var cred = all.filter(function(h){ return parseFloat(h.credibility) >= 80; }).length;
+  var cities = new Set(all.map(function(h){ return h.city; }).filter(Boolean)).size;
+  $("st-high").textContent = high;
+  $("st-cred").textContent = cred;
+  $("st-cities").textContent = cities;
+  $("st-high-bar").style.width = all.length ? Math.round(high/all.length*100)+"%" : "0%";
+  $("st-cred-bar").style.width = all.length ? Math.round(cred/all.length*100)+"%" : "0%";
+}
+
+function renderList(){
+  var filtered = filterData();
+  var sorted = sortData(filtered);
+  $("result-count").textContent = "共 " + sorted.length + " 条";
+  if (!state.data.length) {
+    listEl.innerHTML =
+      '<div class="empty"><div class="big">🏨</div><h3>还没有数据</h3>' +
+      '<p>系统每晚 23:30 自动采集；当前情报库为空。你可以先「载入演示数据」预览界面，或配置数据源 / 导入 JSON。</p>' +
+      '<div class="actions"><button class="btn primary" type="button" data-action="demo">载入演示数据</button>' +
+      '<button class="btn" type="button" data-action="source">配置数据源</button></div></div>';
+    return;
+  }
+  if (!sorted.length) {
+    listEl.innerHTML = '<div class="empty"><div class="big">🔍</div><h3>没有符合筛选条件的项目</h3>' +
+      '<p>请调整筛选条件后重试。</p></div>';
+    return;
+  }
+  listEl.innerHTML = sorted.map(cardHtml).join("");
+}
+
+function updateMeta(){
+  var labels = { none:"等待数据", demo:"演示数据", github:"仓库数据", import:"手动导入" };
+  $("meta-state").textContent = labels[state.source] || "等待数据";
+  $("meta-total").textContent = state.data.length;
+  $("meta-updated").textContent = state.updated ? String(state.updated).slice(0,16).replace("T"," ") : "—";
+}
+
+function setState(data, source, updated){
+  state.data = Array.isArray(data) ? data : [];
+  state.source = source;
+  state.updated = updated || new Date().toISOString();
+  renderStats(state.data);
+  renderList();
+  updateMeta();
+}
+
+/* ---------- 数据加载 ---------- */
+function loadDemo(){ setState(demoData(), "demo"); }
+
+function normalize(raw){
+  if (Array.isArray(raw)) return raw;
+  if (raw && Array.isArray(raw.hotels)) return raw.hotels;
+  if (raw && Array.isArray(raw.data)) return raw.data;
+  return null;
+}
+
+function loadData(url){
+  url = (url || "").trim() || "data/hotels.json";
+  listEl.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在加载数据…</p></div>';
+  fetch(url, {method:"GET", credentials:"omit"})
+    .then(function(res){
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    })
+    .then(function(raw){
+      var arr = normalize(raw);
+      if (!arr) throw new Error("数据格式不符合：需要酒店项目 JSON 数组");
+      setState(arr, "github", new Date().toISOString());
+      try { localStorage.setItem(LS_URL, url); } catch(e){}
+    })
+    .catch(function(err){
+      listEl.innerHTML = '<div class="error"><div class="big">⚠️</div><h3>数据加载失败</h3>' +
+        '<p>请确认 data/hotels.json 存在且格式正确，或改用「导入 JSON」。</p>' +
+        '<div class="err-code">'+esc(err && err.message || "未知错误")+'</div></div>';
+    });
+}
+
+function importJson(){
+  var area = $("import-area");
+  var raw = area.value.trim();
+  if (!raw) { alert("请先粘贴 JSON 内容"); return; }
+  try {
+    var arr = normalize(JSON.parse(raw));
+    if (!arr) throw new Error("格式不符合");
+    setState(arr, "import");
+    $("url-form").classList.remove("open");
+  } catch(e){
+    alert("JSON 解析失败：" + (e && e.message || "格式错误"));
+  }
+}
+
+/* ---------- 交互绑定 ---------- */
+function bindActions(root){
+  if (!root) return;
+  var demoBtn = root.querySelector('[data-action="demo"]');
+  if (demoBtn) demoBtn.addEventListener("click", loadDemo);
+  var srcBtn = root.querySelector('[data-action="source"]');
+  if (srcBtn) srcBtn.addEventListener("click", function(){ openSourceForm(); });
+}
+
+function openSourceForm(){
+  $("url-form").classList.add("open");
+  var saved = "";
+  try { saved = localStorage.getItem(LS_URL) || ""; } catch(e){}
+  $("gh-url").value = saved || "data/hotels.json";
+  $("gh-url").focus();
+  $("import-area").value = "";
+}
+
+$("btn-source").addEventListener("click", function(){
+  if ($("url-form").classList.contains("open")) {
+    $("url-form").classList.remove("open");
+  } else {
+    openSourceForm();
+  }
+});
+$("btn-apply-url").addEventListener("click", function(){ loadData($("gh-url").value); });
+$("gh-url").addEventListener("keydown", function(e){
+  if (e.key === "Enter") { e.preventDefault(); loadData(this.value); }
+});
+$("btn-cancel-url").addEventListener("click", function(){ $("url-form").classList.remove("open"); });
+$("btn-import").addEventListener("click", function(){
+  var area = $("import-area");
+  var wrap = area.parentElement;
+  wrap.style.display = (wrap.style.display === "none") ? "block" : "none";
+});
+$("btn-apply-import").addEventListener("click", importJson);
+$("btn-demo").addEventListener("click", loadDemo);
+$("btn-reload").addEventListener("click", function(){
+  if (state.source === "github") {
+    var saved = "";
+    try { saved = localStorage.getItem(LS_URL) || ""; } catch(e){}
+    loadData(saved || "data/hotels.json");
+    return;
+  }
+  loadDemo();
+});
+$("btn-reset").addEventListener("click", function(){
+  ["f-keyword","f-city","f-inv-min","f-inv-max","f-rooms-min","f-rooms-max","f-cred","f-lead"].forEach(function(id){
+    $(id).value = "";
+  });
+  ["f-stage","f-tier","f-status"].forEach(function(id){ $(id).value = ""; });
+  $("f-sort").value = "lead";
+  state.sort = "lead";
+  renderList();
+});
+$("btn-copy").addEventListener("click", function(){
+  var filtered = sortData(filterData());
+  var lines = filtered.slice(0,50).map(function(h){
+    var loc = [h.city,h.district].filter(Boolean).join("·") || "地区未知";
+    return (h.name||"未命名") + "｜" + (h.stage||"待确认") + "｜" + (h.tier||"") + "｜" + loc +
+      "｜投资" + (h.investment_yi||"—") + "亿｜" + (h.rooms||"—") + "间｜可信度" + (h.credibility||"—") + "｜价值" + (h.lead_score||"—");
+  });
+  var text = "全国酒店项目情报查询结果（" + state.data.length + " 条中筛选 " + filtered.length + " 条）\n" + lines.join("\n") + "\n\n以官方公告为准";
+  var done = false;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function(){}, function(){ fallbackCopy(text); });
+      done = true;
+    }
+  } catch(e){}
+  if (!done) fallbackCopy(text);
+  alert("结果摘要已复制（前 50 条）");
+});
+function fallbackCopy(text){
+  try {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+  } catch(e){}
+}
+
+["f-keyword","f-city","f-stage","f-tier","f-status","f-inv-min","f-inv-max","f-rooms-min","f-rooms-max","f-cred","f-lead"].forEach(function(id){
+  $(id).addEventListener("input", renderList);
+  $(id).addEventListener("change", renderList);
+});
+$("f-sort").addEventListener("change", function(){ state.sort = this.value; renderList(); });
+document.addEventListener("click", function(e){
+  var t = e.target;
+  if (t && t.dataset && t.dataset.action) bindActions(t.closest(".empty"));
+});
+
+/* ---------- 启动 ---------- */
+function init(){
+  var saved = "";
+  try { saved = localStorage.getItem(LS_URL) || ""; } catch(e){}
+  if (saved) { loadData(saved); return; }
+  loadData("data/hotels.json");
+}
+init();
+
+})();
+</script>
+</body>
+</html>
