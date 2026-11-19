@@ -1,0 +1,162 @@
+{
+  "version": "1.0.0",
+  "project": "hotel-board",
+  "updated_at": "2026-11-18T00:00:00+08:00",
+  "description": "全国酒店项目情报官 · 采集规则配置（独立于页面，更新本文件无需重新加密 index.html）",
+  "run": {
+    "schedule": "每日 23:30（Asia/Shanghai）",
+    "concurrency": 1,
+    "global_limit_per_run": 200,
+    "domain_limit_per_run": 30,
+    "request_interval_sec": [8, 15],
+    "user_agent": "HotelBoardBot/1.0 (+CONTACT_EMAIL)",
+    "respect_robots_txt": true,
+    "conditional_request": ["ETag", "Last-Modified"],
+    "retry_after_429": true,
+    "circuit_breaker": {
+      "consecutive_failures": 3,
+      "domain_cooldown_min": 1440
+    },
+    "privacy": {
+      "collect_personal_info": false,
+      "keep_original_text": false,
+      "keep_url_and_summary_only": true
+    }
+  },
+  "time_filters": {
+    "options": ["today", "1m", "3m", "6m"],
+    "default": "3m",
+    "label": {
+      "today": "当天",
+      "1m": "1 个月",
+      "3m": "3 个月",
+      "6m": "半年"
+    }
+  },
+  "sources": [
+    {
+      "id": "gov_housing",
+      "name": "各级政府/住建/文旅局 · 重点项目公示与规划批前公示",
+      "type": "official",
+      "authority": 2,
+      "enabled": false,
+      "note": "按省份配置域名与检索路径",
+      "domains": [],
+      "keywords": ["酒店", "五星级酒店", "高端酒店", "旅游度假酒店"],
+      "time_filter_supported": true
+    },
+    {
+      "id": "purchase_platform",
+      "name": "公共资源交易平台 · 招标/中标公告",
+      "type": "official",
+      "authority": 2,
+      "enabled": false,
+      "domains": [],
+      "keywords": ["酒店 招标", "酒店 中标", "酒店 施工"],
+      "time_filter_supported": true
+    },
+    {
+      "id": "cninfo",
+      "name": "巨潮资讯网 · 上市公司投资公告",
+      "type": "official",
+      "authority": 2,
+      "enabled": true,
+      "domain": "cninfo.com.cn",
+      "search_url": "http://www.cninfo.com.cn/new/fulltextSearch/full?searchkey={kw}&sdate={start}&edate={end}",
+      "keywords": ["酒店 投资", "酒店 项目 公告"],
+      "time_filter_supported": true
+    },
+    {
+      "id": "brand_newsroom",
+      "name": "品牌官方 Newsroom（万豪/希尔顿/洲际/凯悦/雅高）",
+      "type": "official",
+      "authority": 2,
+      "enabled": false,
+      "domains": [
+        "marriott.com",
+        "newsroom.hilton.com",
+        "news.ihg.com",
+        "newsroom.hyatt.com",
+        "news.accor.com"
+      ],
+      "keywords": ["new hotel", "opening", "signing", "development"],
+      "time_filter_supported": true
+    },
+    {
+      "id": "maidian",
+      "name": "迈点网 · 行业媒体",
+      "type": "media",
+      "authority": 1,
+      "enabled": true,
+      "domain": "meadin.com",
+      "search_url": "https://www.meadin.com/search?q={kw}",
+      "keywords": ["酒店 开工", "酒店 签约", "酒店 开业"],
+      "time_filter_supported": true
+    },
+    {
+      "id": "ttgchina",
+      "name": "TTG China · 行业媒体",
+      "type": "media",
+      "authority": 1,
+      "enabled": false,
+      "domain": "ttgchina.com",
+      "search_url": "",
+      "keywords": ["hotel opening", "hotel signing"],
+      "time_filter_supported": true
+    },
+    {
+      "id": "thepaper",
+      "name": "澎湃新闻 · 行业媒体",
+      "type": "media",
+      "authority": 1,
+      "enabled": true,
+      "domain": "thepaper.cn",
+      "search_url": "https://www.thepaper.cn/searchResult?searchWord={kw}",
+      "keywords": ["酒店 项目 开工", "酒店 签约"],
+      "time_filter_supported": true
+    },
+    {
+      "id": "research",
+      "name": "研报站 / JLL / 戴德梁行新闻稿",
+      "type": "media",
+      "authority": 1,
+      "enabled": false,
+      "domains": [],
+      "keywords": ["hotel investment", "hotel market"],
+      "time_filter_supported": true
+    },
+    {
+      "id": "local_media",
+      "name": "地方媒体 / 企业官网 / OTA / 行业公众号",
+      "type": "supplement",
+      "authority": 0,
+      "enabled": false,
+      "note": "仅作线索发现，必须交叉验证后才能入库",
+      "domains": [],
+      "keywords": [],
+      "time_filter_supported": true
+    }
+  ],
+  "scoring": {
+    "credibility": {
+      "source_authority": 25,
+      "completeness": 20,
+      "cross_source": 20,
+      "official_evidence": 20,
+      "logic_consistency": 15,
+      "threshold_push": 80,
+      "threshold_weekly": 60
+    },
+    "lead_value": {
+      "brand_tier": 20,
+      "investment_scale": 20,
+      "project_stage": 20,
+      "region_value": 20,
+      "decision_reachability": 20
+    }
+  },
+  "dedup": {
+    "id_same": "version + 1",
+    "name_fingerprint_similarity": 0.92
+  }
+}
