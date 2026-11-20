@@ -780,6 +780,170 @@
         "cooldown_min": 2880,
         "auto_skip": true
       }
+    },
+    {
+      "id": "shangri_la_cn",
+      "name": "香格里拉集团中文媒体中心",
+      "type": "official_group",
+      "group": "香格里拉",
+      "enabled": true,
+      "language": "zh",
+      "homepage": "https://www.shangri-la.com/cn/group/media/",
+      "list_url": "https://www.shangri-la.com/cn/group/media/",
+      "note": "香格里拉集团媒体中心（中文，静态列表，含开发项目与新酒店/翻新工程分类，分页1-10）",
+      "pagination": {
+        "enabled": true,
+        "max_pages": 8,
+        "url_pattern": "https://www.shangri-la.com/cn/group/media/?page={page}"
+      },
+      "selectors": {
+        "list": "",
+        "item": "",
+        "title": "",
+        "link": "",
+        "date": ""
+      },
+      "ai_probe": true,
+      "request_interval_ms": [
+        1500,
+        2500
+      ],
+      "time_break": {
+        "enabled": true
+      },
+      "china_filter": {
+        "enabled": true,
+        "regions": [
+          "中国大陆",
+          "港澳"
+        ]
+      },
+      "media_filter": null,
+      "keywords": [
+        "签约",
+        "开业",
+        "新酒店",
+        "翻新",
+        "开幕",
+        "启幕",
+        "进驻",
+        "项目"
+      ],
+      "403_policy": {
+        "skip_after": 3,
+        "cooldown_min": 1440,
+        "auto_skip": true
+      }
+    },
+    {
+      "id": "marriott_prnasia",
+      "name": "万豪国际（美通社新闻室）",
+      "type": "official_group",
+      "group": "万豪国际",
+      "enabled": true,
+      "language": "zh",
+      "homepage": "http://www.prnasia.com/releases/ticker+NASDAQ-NMS+MAR+1+0.shtml",
+      "list_url": "http://www.prnasia.com/releases/ticker+NASDAQ-NMS+MAR+1+0.shtml",
+      "note": "美通社万豪国际新闻室（静态列表，含大中华区签约/开业/里程碑新闻）",
+      "pagination": {
+        "enabled": true,
+        "max_pages": 5,
+        "url_pattern": ""
+      },
+      "selectors": {
+        "list": "",
+        "item": "",
+        "title": "",
+        "link": "",
+        "date": ""
+      },
+      "ai_probe": true,
+      "request_interval_ms": [
+        1500,
+        2500
+      ],
+      "time_break": {
+        "enabled": true
+      },
+      "china_filter": {
+        "enabled": true,
+        "regions": [
+          "中国大陆",
+          "港澳"
+        ]
+      },
+      "media_filter": null,
+      "keywords": [
+        "签约",
+        "开业",
+        "酒店",
+        "新项目",
+        "启幕",
+        "进驻",
+        "瑞吉",
+        "丽思卡尔顿",
+        "JW万豪",
+        "威斯汀"
+      ],
+      "403_policy": {
+        "skip_after": 3,
+        "cooldown_min": 1440,
+        "auto_skip": true
+      }
+    },
+    {
+      "id": "mgm_cn",
+      "name": "美高梅酒店集团媒体中心",
+      "type": "official_group",
+      "group": "美高梅",
+      "enabled": true,
+      "language": "zh",
+      "homepage": "https://www.mgmhospitality.com/cn/news",
+      "list_url": "https://www.mgmhospitality.com/cn/news",
+      "note": "美高梅酒店集团（钓鱼台美高梅）媒体中心，含签约/开业/进驻/焕新新闻",
+      "pagination": {
+        "enabled": true,
+        "max_pages": 5,
+        "url_pattern": ""
+      },
+      "selectors": {
+        "list": "",
+        "item": "",
+        "title": "",
+        "link": "",
+        "date": ""
+      },
+      "ai_probe": true,
+      "request_interval_ms": [
+        1500,
+        2500
+      ],
+      "time_break": {
+        "enabled": true
+      },
+      "china_filter": {
+        "enabled": true,
+        "regions": [
+          "中国大陆",
+          "港澳"
+        ]
+      },
+      "media_filter": null,
+      "keywords": [
+        "签约",
+        "开业",
+        "酒店",
+        "进驻",
+        "焕新",
+        "开幕",
+        "启幕",
+        "项目"
+      ],
+      "403_policy": {
+        "skip_after": 3,
+        "cooldown_min": 1440,
+        "auto_skip": true
+      }
     }
   ],
   "scoring": {
