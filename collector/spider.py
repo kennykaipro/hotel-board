@@ -25,6 +25,8 @@ hotel-board 采集器（可复用爬虫核心）
 from __future__ import annotations
 
 import argparse
+import gzip
+import html
 import json
 import os
 import random
@@ -37,36 +39,60 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 CST = timezone(timedelta(hours=8))
-UA_BASE = "HotelBoardBot/1.0 (+CONTACT_EMAIL)"
+# 使用真实浏览器 UA（很多官网/媒体源对机器人 UA 直接 403）；robots.txt 仍由 run 配置约束
+UA_BASE = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+           "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 
 # 导航/无意义链接黑名单（标题命中即排除，防止导航项混入）
 NAV_BLACKLIST = ["开发加盟", "新闻资讯", "酒店预订", "其他地区", "更多", "联系我们", "关于我们",
                  "登录", "注册", "加入我们", "人才招聘", "Icon", "图标", "返回首页", "首页",
-                 "媒体中心", "投资者关系", "English", "En", "品牌介绍", "集团简介"]
+                 "媒体中心", "投资者关系", "English", "品牌介绍", "集团简介"]
 # 媒体源需要过滤的类别关键词（标题命中即不入库）
 MEDIA_DROP = ["人事变动", "财报", "行业点评", "招聘", "任命", "业绩", "白皮书", "榜单",
-              "专访", "峰会", "论坛", "白皮书发布", "获奖", "奖项", "代言人", "携手", "合作发布",
+              "专访", "峰会", "论坛", "白皮书发布", "获奖", "奖项", "代言人",
               "会员", "礼遇", "忠诚度", "黑珍珠", "点评"]
 # 媒体源需要保留的项目类关键词（标题命中任一即候选）
 MEDIA_KEEP = ["签约", "落地", "拟建", "开业", "物业合作", "新项目", "开工", "奠基", "进驻",
               "品牌入驻", "双品牌", "筹建", "启幕", "启航", "落子", "落户", "揭幕", "剪彩",
-              "首家", "首店", "首秀", "翻新", "焕新", "重生"]
+              "首家", "首店", "首秀", "翻新", "焕新", "重生", "摘牌", "拿地", "中标", "出让",
+              "新店", "签约落地"]
+# 项目排除词（标题命中即排除：非项目新闻/合作/活动）
+PROJECT_DROP = ["联名", "洗护", "产品系列", "生态圈", "会员", "礼遇", "大会",
+                "论坛", "峰会", "白皮书", "榜单", "招聘", "财报", "任命"]
 # 项目类动作词（集团官网/媒体通用：标题命中任一即视为项目公告候选）
 PROJECT_VERBS = ["签约", "开业", "启幕", "启航", "落子", "落户", "进驻", "入驻", "开工",
                  "奠基", "拟建", "在建", "筹建", "揭幕", "剪彩", "焕新", "重生", "首店",
-                 "首家", "首秀", "亮相", "登场", "里程碑", "项目"]
+                 "首家", "首秀", "亮相", "登场", "里程碑", "项目", "摘牌", "拿地", "中标",
+                 "出让", "新店", "签约落地"]
 # 英文项目类动作词（用于英文官网源）
 PROJECT_VERBS_EN = ["opening", "opens", "signing", "signs", "debut", "debuts", "grand opening",
-                    "property", "hotel", "development", "milestone", "growth", "expansion",
-                    "first hotel", "new hotel"]
+                    "development", "milestone", "growth", "expansion",
+                    "first hotel", "new hotel", "to open", "announces plans"]
 # 中国地区判定关键词（标题/摘要/正文命中任一即视为中国项目，用于无 AI 时的规则判定）
 CHINA_HINTS = ["中国", "大中华区", "北京", "上海", "广州", "深圳", "成都", "杭州", "重庆",
                "武汉", "西安", "南京", "苏州", "天津", "长沙", "郑州", "青岛", "宁波", "厦门",
-               "三亚", "香港", "澳门", "澳门", "内地", "国内", "在华"]
-# 明确海外项目关键词（命中即过滤）
+               "三亚", "香港", "澳门", "澳门", "内地", "国内", "在华",
+               "China", "Chinese", "Greater China", "Shanghai", "Beijing", "Guangzhou",
+               "Shenzhen", "Chengdu", "Hangzhou", "Chongqing", "Wuhan", "Xi'an", "Xian",
+               "Nanjing", "Suzhou", "Tianjin", "Changsha", "Zhengzhou", "Qingdao",
+               "Ningbo", "Xiamen", "Sanya", "Hong Kong", "Macau", "Macao"]
+# 明确海外项目关键词（命中即过滤；含常见海外城市/国家英文名，用于英文官网源）
 OVERSEAS_HINTS = ["美国", "欧洲", "英国", "法国", "德国", "意大利", "西班牙", "日本", "韩国",
                   "泰国", "新加坡", "马来西亚", "迪拜", "中东", "澳大利亚", "加拿大", "纽约",
-                  "伦敦", "巴黎", "东京", "首尔", "曼谷", "拉斯维加斯", "迈阿密"]
+                  "伦敦", "巴黎", "东京", "首尔", "曼谷", "拉斯维加斯", "迈阿密",
+                  "USA", "United States", "Europe", "UK", "Britain", "France", "Germany",
+                  "Italy", "Spain", "Japan", "Korea", "Thailand", "Singapore", "Malaysia",
+                  "Dubai", "Middle East", "Australia", "Canada", "New Zealand", "Mexico",
+                  "India", "Vietnam", "Indonesia", "Philippines", "Qatar", "Abu Dhabi",
+                  "Saudi", "Turkey", "Egypt", "Brazil", "Argentina", "Switzerland",
+                  "Netherlands", "Belgium", "Austria", "Portugal", "Greece", "Poland",
+                  "Brisbane", "Rome", "Bangkok", "Berlin", "Sydney", "Melbourne",
+                  "Mumbai", "Bengaluru", "Bangalore", "Delhi", "Madrid", "Barcelona",
+                  "Milan", "Munich", "Frankfurt", "Amsterdam", "Vienna", "Zurich",
+                  "Geneva", "Copenhagen", "Stockholm", "Oslo", "Warsaw", "Budapest",
+                  "Auckland", "Cairo", "Istanbul", "Cape Town", "Rio", "Sao Paulo",
+                  "Los Angeles", "Chicago", "Boston", "San Francisco", "Seattle",
+                  "Miami", "Orlando", "Honolulu", "Hawaii", "Las Vegas"]
 # 中国主要城市名单（用于从标题/正文抽取城市，规则回退）
 CHINA_CITIES = ["北京", "上海", "广州", "深圳", "成都", "杭州", "重庆", "武汉", "西安", "南京",
                 "苏州", "天津", "长沙", "郑州", "青岛", "宁波", "厦门", "三亚", "昆明", "合肥",
@@ -129,18 +155,18 @@ def within_window(date_text: str, time_filter: str) -> bool:
     return d >= now - delta
 
 
-def is_china_project(title: str, summary: str = "", content: str = "") -> Tuple[bool, List[str]]:
-    """规则版中国判定（无 AI 时使用）；返回 (是否中国, 命中的海外提示)。"""
+def is_china_project(title: str, summary: str = "", content: str = "",
+                   strict_en: bool = False) -> Tuple[bool, List[str]]:
+    """规则版中国判定（无 AI 时使用）；返回 (是否中国, 命中的海外提示)。
+    strict_en=True 用于英文官网源（如凯悦 newsroom 为全球新闻），无中国关键词即判海外。"""
     hay = f"{title} {summary} {content}"
     overseas_hits = [k for k in OVERSEAS_HINTS if k in hay]
-    if overseas_hits:
-        # 若同时有中国城市，可能是"中国某品牌在海外"或"海外品牌在华"——进一步判断
-        china_hits = [k for k in CHINA_HINTS if k in hay]
-        if not china_hits:
-            return False, overseas_hits
-        # 海外与国内并存时，倾向保留（由 AI 复核），但记录提示
-        return True, overseas_hits
-    return True, []
+    china_hits = [k for k in CHINA_HINTS if k in hay]
+    if overseas_hits and not china_hits:
+        return False, overseas_hits
+    if strict_en and not china_hits:
+        return False, ["en_no_china_hint"]
+    return True, overseas_hits
 
 
 def pick_city(title: str, summary: str = "", content: str = "") -> str:
@@ -176,11 +202,11 @@ def build_absolute(url: str, base: str) -> str:
 
 def http_get(url: str, interval_ms: List[int], max_retries: int = 3,
              timeout: int = 15, retry_codes=(403, 429)) -> Tuple[Optional[str], int, Optional[str]]:
-    """带限速与重试的 GET。返回 (html, status, err)。"""
+    """带限速与重试的 GET。返回 (html, status, err)。支持 gzip 解压。"""
     headers = {
         "User-Agent": UA_BASE,
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.7",
+        "Accept-Encoding": "identity",
     }
     last_err = None
     for attempt in range(1, max_retries + 1):
@@ -188,7 +214,10 @@ def http_get(url: str, interval_ms: List[int], max_retries: int = 3,
             req = urllib.request.Request(url, headers=headers)
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 status = resp.getcode()
-                html = resp.read().decode("utf-8", "replace")
+                raw = resp.read()
+                if resp.headers.get("Content-Encoding", "").lower() == "gzip":
+                    raw = gzip.decompress(raw)
+                html = raw.decode("utf-8", "replace")
                 return html, status, None
         except urllib.error.HTTPError as e:
             last_err = f"HTTP {e.code}"
@@ -234,7 +263,7 @@ def set_ai_extractor(fn) -> None:
     _ai_extractor = fn
 
 
-def extract_links_via_regex(html: str, base_url: str, language: str = "zh") -> List[Dict[str, str]]:
+def extract_links_via_regex(page_html: str, base_url: str, language: str = "zh") -> List[Dict[str, str]]:
     """
     规则版列表页解析（无 CSS 选择器时使用，作为 AI 探测前的最低成本回退）。
     提取 <a> 标题 + href，供后续去重与详情页处理。
@@ -242,8 +271,9 @@ def extract_links_via_regex(html: str, base_url: str, language: str = "zh") -> L
     """
     items: List[Dict[str, str]] = []
     seen = set()
-    for m in re.finditer(r"<a[^>]+href=[\"']([^\"']+)[\"'][^>]*>(.*?)</a>", html, re.S | re.I):
+    for m in re.finditer(r"<a[^>]+href=[\"']([^\"']+)[\"'][^>]*>(.*?)</a>", page_html, re.S | re.I):
         href, text = m.group(1), re.sub(r"<[^>]+>", "", m.group(2)).strip()
+        text = html.unescape(text)  # 解码 &#x9996; 等实体，否则中文关键词匹配失败
         text = re.sub(r"\s+", " ", text).strip()
         # 清理前导序号/日期数字（如 "13 香港夏利酒店..."）
         text = re.sub(r"^\d{1,3}\s+", "", text).strip()
@@ -286,11 +316,14 @@ def is_project_candidate(title: str, language: str = "zh") -> bool:
     t = title.strip()
     if not t or len(t) < 4:
         return False
+    tl = t.lower()
     for nav in NAV_BLACKLIST:
-        if nav.lower() in t.lower():
+        if nav.lower() in tl:
+            return False
+    for drop in PROJECT_DROP:
+        if drop.lower() in tl:
             return False
     verbs = PROJECT_VERBS_EN if language == "en" else PROJECT_VERBS
-    tl = t.lower()
     return any(v in tl for v in verbs)
 
 
@@ -298,10 +331,10 @@ class SiteCrawler:
     def __init__(self, cfg: Dict[str, Any]):
         self.cfg = cfg
         self.admin = cfg.get("admin", {})
-        self.run = cfg.get("run", {})
-        self.default_interval = self.run.get("request_interval_ms", [1200, 2200])
-        self.max_retries = self.run.get("max_retries", 3)
-        self.timeout = self.run.get("request_timeout_sec", 15)
+        self.run_cfg = cfg.get("run", {})
+        self.default_interval = self.run_cfg.get("request_interval_ms", [1200, 2200])
+        self.max_retries = self.run_cfg.get("max_retries", 3)
+        self.timeout = self.run_cfg.get("request_timeout_sec", 15)
         self.max_pages_default = self.admin.get("max_pages_default", 5)
         self.ai_probe_enabled = self.admin.get("ai_auto_probe", True)
         self.time_filter = "3m"
@@ -395,7 +428,8 @@ class SiteCrawler:
             return  # 已存在，去重
 
         # 中国过滤（规则版；AI 接入时以 AI 为准）
-        is_china, overseas_hits = is_china_project(title, date)
+        strict_en = src.get("language") == "en"
+        is_china, overseas_hits = is_china_project(title, date, "", strict_en)
         if not is_china:
             self.site_stats.setdefault(sid, {"hits": 0, "kept": 0, "filtered_overseas": 0, "filtered_media": 0})
             self.site_stats[sid]["filtered_overseas"] += 1
