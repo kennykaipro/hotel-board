@@ -254,9 +254,17 @@ function cityItemHtml(h){
   if (h.rooms) meta.push(esc(h.rooms)+" 间");
   if (h.expected_open) meta.push("预计 "+esc(h.expected_open));
   if (h.actual_open) meta.push("开业 "+esc(h.actual_open));
+  var linkUrl = "";
+  if (h.detail_url && /^https?:\/\//i.test(h.detail_url)) linkUrl = h.detail_url;
+  else if (Array.isArray(h.sources) && h.sources.length && h.sources[0].url && /^https?:\/\//i.test(h.sources[0].url)) linkUrl = h.sources[0].url;
   var name = esc(h.name || "未命名项目");
+  if (linkUrl) {
+    name = '<a class="ci-name" href="'+esc(linkUrl)+'" target="_blank" rel="noopener noreferrer" title="打开线索来源">'+name+' ↗</a>';
+  } else {
+    name = '<span class="ci-name">'+name+'</span>';
+  }
   return '<div class="city-item">' +
-    '<span class="ci-name">'+name+'</span>' +
+    name +
     '<span class="ci-meta"><span class="badge '+stageClass(ph)+'">'+esc(ph)+'</span>' + meta.join('<span class="ci-sep">·</span>') + '</span>' +
   '</div>';
 }
@@ -556,6 +564,7 @@ $("btn-copy").addEventListener("click", function(){
   if (!done) fallbackCopy(text);
   alert("结果摘要已复制（前 50 条）");
 });
+$("btn-export").addEventListener("click", exportExcel);
 function fallbackCopy(text){
   try {
     var ta = document.createElement("textarea");
@@ -564,6 +573,45 @@ function fallbackCopy(text){
     document.execCommand("copy");
     document.body.removeChild(ta);
   } catch(e){}
+}
+
+/* ---------- 导出 Excel（当前筛选结果） ---------- */
+function firstSourceUrl(h){
+  if (h.detail_url && /^https?:\/\//i.test(h.detail_url)) return h.detail_url;
+  if (Array.isArray(h.sources) && h.sources.length && h.sources[0].url) return h.sources[0].url;
+  return "";
+}
+function exportExcel(){
+  var filtered = sortData(filterData());
+  if (!filtered.length) { alert("当前没有可导出的项目（请调整筛选或先载入数据）"); return; }
+  if (!window.XLSX) { alert("Excel 组件未加载，请刷新页面重试"); return; }
+  var rows = filtered.map(function(h){
+    return {
+      "城市": h.city || "",
+      "品牌": h.brand || "",
+      "集团": h.group || "",
+      "项目名称": h.name || "",
+      "阶段": h.stage || "",
+      "细分阶段": h.phase || "",
+      "档次": h.tier || "",
+      "客房数(间)": h.rooms || "",
+      "投资额(亿元)": h.investment_yi || "",
+      "建筑面积(万㎡)": h.building_area_wan || "",
+      "预计开业": h.expected_open || "",
+      "实际开业": h.actual_open || "",
+      "来源链接": firstSourceUrl(h),
+      "备注": h.remark || ""
+    };
+  });
+  var ws = XLSX.utils.json_to_sheet(rows);
+  ws["!cols"] = [
+    {wch:8},{wch:12},{wch:12},{wch:36},{wch:10},{wch:10},{wch:8},
+    {wch:10},{wch:12},{wch:14},{wch:10},{wch:10},{wch:60},{wch:40}
+  ];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "酒店项目线索");
+  var d = new Date(), stamp = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  XLSX.writeFile(wb, "hotel-projects-" + stamp + ".xlsx");
 }
 
 ["f-keyword","f-city","f-stage","f-phase","f-tier","f-status","f-inv-min","f-inv-max","f-rooms-min","f-rooms-max","f-cred","f-lead"].forEach(function(id){
