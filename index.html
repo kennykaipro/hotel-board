@@ -167,12 +167,36 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 }
 .result-head h2{margin:0;font-size:16px;font-weight:700}
 .result-head .count{font-size:13px;color:var(--ink-2)}
+.view-tabs{display:flex;gap:6px}
+.view-tab{
+  font:inherit;font-size:13px;line-height:1;padding:8px 14px;border-radius:var(--radius-sm);
+  border:1px solid var(--line);background:var(--surface);color:var(--ink-2);cursor:pointer;
+}
+.view-tab.active{background:var(--brand);border-color:var(--brand);color:var(--brand-ink);font-weight:600}
 .sort-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);flex-wrap:wrap}
 .sort-row select{
   font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:var(--radius-sm);
   background:var(--surface);color:var(--ink);
 }
 .list{margin-top:12px;display:flex;flex-direction:column;gap:12px}
+
+/* ===== 按城市视图 ===== */
+.city-group{padding:14px 16px}
+.city-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;justify-content:space-between}
+.city-head h3{margin:0;font-size:17px;font-weight:700}
+.city-head .city-count{font-size:13px;color:var(--ink-2)}
+.city-phase-summary{font-size:12.5px;color:var(--ink-3);margin-top:2px}
+.phase-block{margin-top:10px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface-2);padding:10px 12px}
+.phase-title{font-size:13px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.phase-title .phase-count{font-size:12px;color:var(--ink-3);font-weight:500}
+.phase-list{display:flex;flex-direction:column;gap:6px}
+.city-item{
+  display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;justify-content:space-between;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:8px 10px;
+}
+.city-item .ci-name{font-size:14px;font-weight:600;color:var(--ink);min-width:0}
+.city-item .ci-brand{font-size:12px;color:var(--ink-2)}
+.city-item .ci-meta{font-size:12px;color:var(--ink-3);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
 .card-top{padding:14px 16px 10px;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-start;justify-content:space-between}
@@ -195,6 +219,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .badge.stage-c{border-color:#c7d7ec;background:#e9f1fb;color:#31567f}
 .badge.stage-t{border-color:#bfe0d2;background:#e6f4ed;color:#1f6b4c}
 .badge.stage-o{border-color:#d9d6ce;background:#f0ede7;color:#5c5a52}
+.badge.stage-b{border-color:#dcc7ec;background:#f3e9fa;color:#6a3d8a}
 .badge.tier-lux{border-color:#d9c08a;background:#faf0d8;color:#7a5a10}
 .badge.status-ok{border-color:#bfe0d2;background:#e6f4ed;color:#1f6b4c}
 .badge.status-wait{border-color:#e6d3a2;background:#f7edd8;color:#7a5a10}
@@ -335,10 +360,21 @@ footer .foot-links{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:spac
         <label for="f-stage">阶段</label>
         <select id="f-stage">
           <option value="">全部阶段</option>
-          <option value="拟建">拟建 / 签约</option>
-          <option value="在建">在建</option>
-          <option value="试营业">试营业</option>
           <option value="已开业">已开业</option>
+          <option value="筹备中">筹备中</option>
+          <option value="在建">在建</option>
+          <option value="建筑标已招">建筑标已招</option>
+          <option value="待确认">待确认</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-phase">细分阶段</label>
+        <select id="f-phase">
+          <option value="">全部细分</option>
+          <option value="筹备中">筹备中（签约/拟建/规划）</option>
+          <option value="建筑标已招">建筑标已招（中标/摘牌/招标）</option>
+          <option value="在建">在建（施工/封顶）</option>
+          <option value="已开业">已开业（启幕/试业）</option>
           <option value="待确认">待确认</option>
         </select>
       </div>
@@ -396,6 +432,10 @@ footer .foot-links{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:spac
   <section aria-label="查询结果">
     <div class="result-head">
       <h2>项目列表</h2>
+      <div class="view-tabs" role="tablist" aria-label="视图切换">
+        <button class="view-tab active" type="button" id="view-list" role="tab" aria-selected="true">列表</button>
+        <button class="view-tab" type="button" id="view-city" role="tab" aria-selected="false">按城市</button>
+      </div>
       <div class="count" id="result-count">共 0 条</div>
       <div class="sort-row">
         <label for="f-sort">排序</label>
