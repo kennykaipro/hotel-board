@@ -8,7 +8,10 @@
     "ai_probe_off_hint": "关闭后：选择器为空的站点不触发 AI 探测，直接跳过，不消耗积分",
     "max_pages_default": 5,
     "global_concurrency": 2,
-    "default_interval_ms": [1200, 2200],
+    "default_interval_ms": [
+      1200,
+      2200
+    ],
     "max_retries": 3,
     "request_timeout_sec": 15,
     "403_skip_after": 3,
@@ -21,13 +24,19 @@
     "concurrency": 2,
     "global_limit_per_run": 200,
     "domain_limit_per_run": 30,
-    "request_interval_ms": [1200, 2200],
+    "request_interval_ms": [
+      1200,
+      2200
+    ],
     "max_pages": 5,
     "max_retries": 3,
     "request_timeout_sec": 15,
     "user_agent": "HotelBoardBot/1.0 (+CONTACT_EMAIL)",
     "respect_robots_txt": true,
-    "conditional_request": ["ETag", "Last-Modified"],
+    "conditional_request": [
+      "ETag",
+      "Last-Modified"
+    ],
     "retry_after_429": true,
     "circuit_breaker": {
       "consecutive_failures": 3,
@@ -40,7 +49,12 @@
     }
   },
   "time_filters": {
-    "options": ["today", "1m", "3m", "6m"],
+    "options": [
+      "today",
+      "1m",
+      "3m",
+      "6m"
+    ],
     "default": "3m",
     "label": {
       "today": "当天",
@@ -60,13 +74,19 @@
     "rule": "当页面公告日期早于配置时间范围，立刻停止该站点翻页，减少无效请求"
   },
   "rate_limit": {
-    "interval_ms": [1200, 2200],
+    "interval_ms": [
+      1200,
+      2200
+    ],
     "global_concurrency": 2,
     "rule": "同一网站两次请求间隔 1200-2200ms，全局并发最多 2 个站点"
   },
   "error_policy": {
     "max_retries": 3,
-    "retry_codes": [403, 429],
+    "retry_codes": [
+      403,
+      429
+    ],
     "timeout_retry": true,
     "skip_site_on_fail": true,
     "skip_rule": "网络异常 403/429/超时最多重试 3 次，失败直接跳过该站点，采集任务不整体卡死",
@@ -101,15 +121,45 @@
       "homepage": "https://www.development.ihg.com.cn/home/news",
       "list_url": "https://www.development.ihg.com.cn/home/news",
       "note": "中文，签约/开业捷报",
-      "pagination": { "enabled": true, "max_pages": 5, "url_pattern": "" },
-      "selectors": { "list": "", "item": "", "title": "", "link": "", "date": "" },
+      "pagination": {
+        "enabled": true,
+        "max_pages": 5,
+        "url_pattern": ""
+      },
+      "selectors": {
+        "list": "",
+        "item": "",
+        "title": "",
+        "link": "",
+        "date": ""
+      },
       "ai_probe": true,
-      "request_interval_ms": [1200, 2200],
-      "time_break": { "enabled": true },
-      "china_filter": { "enabled": true, "regions": ["中国大陆", "港澳"] },
+      "request_interval_ms": [
+        1200,
+        2200
+      ],
+      "time_break": {
+        "enabled": true
+      },
+      "china_filter": {
+        "enabled": true,
+        "regions": [
+          "中国大陆",
+          "港澳"
+        ]
+      },
       "media_filter": null,
-      "keywords": ["签约", "开业", "酒店", "大中华区"],
-      "403_policy": { "skip_after": 3, "cooldown_min": 1440, "auto_skip": true }
+      "keywords": [
+        "签约",
+        "开业",
+        "酒店",
+        "大中华区"
+      ],
+      "403_policy": {
+        "skip_after": 3,
+        "cooldown_min": 1440,
+        "auto_skip": true
+      }
     },
     {
       "id": "marriott_gc",
@@ -120,16 +170,47 @@
       "language": "en",
       "homepage": "https://news.marriott.com/news?newstype=press-releases&newstopic=growth-development",
       "list_url": "https://news.marriott.com/news?newstype=press-releases&newstopic=growth-development",
-      "note": "新闻中心·增长发展板块（press releases / growth development）",
-      "pagination": { "enabled": true, "max_pages": 5, "url_pattern": "" },
-      "selectors": { "list": "", "item": "", "title": "", "link": "", "date": "" },
+      "note": "万豪新闻中心为 JS 渲染（检测到自动跳过），靠行业媒体转载覆盖",
+      "pagination": {
+        "enabled": true,
+        "max_pages": 5,
+        "url_pattern": ""
+      },
+      "selectors": {
+        "list": "",
+        "item": "",
+        "title": "",
+        "link": "",
+        "date": ""
+      },
       "ai_probe": true,
-      "request_interval_ms": [1200, 2200],
-      "time_break": { "enabled": true },
-      "china_filter": { "enabled": true, "regions": ["中国大陆", "港澳"] },
+      "request_interval_ms": [
+        1200,
+        2200
+      ],
+      "time_break": {
+        "enabled": true
+      },
+      "china_filter": {
+        "enabled": true,
+        "regions": [
+          "中国大陆",
+          "港澳"
+        ]
+      },
       "media_filter": null,
-      "keywords": ["China", "Greater China", "opening", "signing", "debut"],
-      "403_policy": { "skip_after": 3, "cooldown_min": 1440, "auto_skip": true }
+      "keywords": [
+        "China",
+        "Greater China",
+        "opening",
+        "signing",
+        "debut"
+      ],
+      "403_policy": {
+        "skip_after": 3,
+        "cooldown_min": 1440,
+        "auto_skip": true
+      }
     },
     {
       "id": "hilton_cn",
@@ -141,15 +222,46 @@
       "homepage": "https://stories.hilton.com/releases",
       "list_url": "https://stories.hilton.com/releases",
       "note": "Hilton Stories 新闻发布列表",
-      "pagination": { "enabled": true, "max_pages": 5, "url_pattern": "" },
-      "selectors": { "list": "", "item": "", "title": "", "link": "", "date": "" },
+      "pagination": {
+        "enabled": true,
+        "max_pages": 5,
+        "url_pattern": ""
+      },
+      "selectors": {
+        "list": "",
+        "item": "",
+        "title": "",
+        "link": "",
+        "date": ""
+      },
       "ai_probe": true,
-      "request_interval_ms": [1200, 2200],
-      "time_break": { "enabled": true },
-      "china_filter": { "enabled": true, "regions": ["中国大陆", "港澳"] },
+      "request_interval_ms": [
+        1200,
+        2200
+      ],
+      "time_break": {
+        "enabled": true
+      },
+      "china_filter": {
+        "enabled": true,
+        "regions": [
+          "中国大陆",
+          "港澳"
+        ]
+      },
       "media_filter": null,
-      "keywords": ["China", "opening", "signing", "debut", "Grand Opening"],
-      "403_policy": { "skip_after": 3, "cooldown_min": 1440, "auto_skip": true }
+      "keywords": [
+        "China",
+        "opening",
+        "signing",
+        "debut",
+        "Grand Opening"
+      ],
+      "403_policy": {
+        "skip_after": 3,
+        "cooldown_min": 1440,
+        "auto_skip": true
+      }
     },
     {
       "id": "jinjiang_cn",
@@ -161,15 +273,45 @@
       "homepage": "https://www.jinjianghotels.com.cn/col45/index",
       "list_url": "https://www.jinjianghotels.com.cn/col45/index",
       "note": "锦江酒店（中国区）企业新闻列表",
-      "pagination": { "enabled": true, "max_pages": 5, "url_pattern": "" },
-      "selectors": { "list": "", "item": "", "title": "", "link": "", "date": "" },
+      "pagination": {
+        "enabled": true,
+        "max_pages": 5,
+        "url_pattern": ""
+      },
+      "selectors": {
+        "list": "",
+        "item": "",
+        "title": "",
+        "link": "",
+        "date": ""
+      },
       "ai_probe": true,
-      "request_interval_ms": [1200, 2200],
-      "time_break": { "enabled": true },
-      "china_filter": { "enabled": true, "regions": ["中国大陆", "港澳"] },
+      "request_interval_ms": [
+        1200,
+        2200
+      ],
+      "time_break": {
+        "enabled": true
+      },
+      "china_filter": {
+        "enabled": true,
+        "regions": [
+          "中国大陆",
+          "港澳"
+        ]
+      },
       "media_filter": null,
-      "keywords": ["签约", "开业", "酒店", "新项目"],
-      "403_policy": { "skip_after": 3, "cooldown_min": 1440, "auto_skip": true }
+      "keywords": [
+        "签约",
+        "开业",
+        "酒店",
+        "新项目"
+      ],
+      "403_policy": {
+        "skip_after": 3,
+        "cooldown_min": 1440,
+        "auto_skip": true
+      }
     },
     {
       "id": "hyatt_cn",
@@ -177,19 +319,52 @@
       "type": "official_group",
       "group": "凯悦",
       "enabled": true,
-      "language": "zh",
-      "homepage": "https://www.hyatt.com/zh-CN/info/news",
-      "list_url": "https://www.hyatt.com/zh-CN/info/news",
-      "note": "凯悦官方新闻页（中文）",
-      "pagination": { "enabled": true, "max_pages": 5, "url_pattern": "" },
-      "selectors": { "list": "", "item": "", "title": "", "link": "", "date": "" },
+      "language": "en",
+      "homepage": "https://newsroom.hyatt.com/news-releases?category=772&l=25",
+      "list_url": "https://newsroom.hyatt.com/news-releases?category=772&l=25",
+      "note": "凯悦新闻室（英文，含全球项目，规则+中国过滤剔除海外）",
+      "pagination": {
+        "enabled": true,
+        "max_pages": 5,
+        "url_pattern": ""
+      },
+      "selectors": {
+        "list": "",
+        "item": "",
+        "title": "",
+        "link": "",
+        "date": ""
+      },
       "ai_probe": true,
-      "request_interval_ms": [1200, 2200],
-      "time_break": { "enabled": true },
-      "china_filter": { "enabled": true, "regions": ["中国大陆", "港澳"] },
+      "request_interval_ms": [
+        1200,
+        2200
+      ],
+      "time_break": {
+        "enabled": true
+      },
+      "china_filter": {
+        "enabled": true,
+        "regions": [
+          "中国大陆",
+          "港澳"
+        ]
+      },
       "media_filter": null,
-      "keywords": ["中国", "签约", "开业", "酒店"],
-      "403_policy": { "skip_after": 3, "cooldown_min": 1440, "auto_skip": true }
+      "keywords": [
+        "China",
+        "Chinese",
+        "Greater China",
+        "Shanghai",
+        "Beijing",
+        "opening",
+        "signing"
+      ],
+      "403_policy": {
+        "skip_after": 3,
+        "cooldown_min": 1440,
+        "auto_skip": true
+      }
     },
     {
       "id": "accor_cn",
@@ -200,16 +375,46 @@
       "language": "zh",
       "homepage": "https://www.accor.com/zh/news/zh-news.html",
       "list_url": "https://www.accor.com/zh/news/zh-news.html",
-      "note": "雅高集团中国区新闻",
-      "pagination": { "enabled": true, "max_pages": 5, "url_pattern": "" },
-      "selectors": { "list": "", "item": "", "title": "", "link": "", "date": "" },
+      "note": "雅高官网源为品牌导航页，靠行业媒体转载覆盖；保留以兼容",
+      "pagination": {
+        "enabled": true,
+        "max_pages": 5,
+        "url_pattern": ""
+      },
+      "selectors": {
+        "list": "",
+        "item": "",
+        "title": "",
+        "link": "",
+        "date": ""
+      },
       "ai_probe": true,
-      "request_interval_ms": [1200, 2200],
-      "time_break": { "enabled": true },
-      "china_filter": { "enabled": true, "regions": ["中国大陆", "港澳"] },
+      "request_interval_ms": [
+        1200,
+        2200
+      ],
+      "time_break": {
+        "enabled": true
+      },
+      "china_filter": {
+        "enabled": true,
+        "regions": [
+          "中国大陆",
+          "港澳"
+        ]
+      },
       "media_filter": null,
-      "keywords": ["中国", "签约", "开业", "酒店"],
-      "403_policy": { "skip_after": 3, "cooldown_min": 1440, "auto_skip": true }
+      "keywords": [
+        "中国",
+        "签约",
+        "开业",
+        "酒店"
+      ],
+      "403_policy": {
+        "skip_after": 3,
+        "cooldown_min": 1440,
+        "auto_skip": true
+      }
     },
     {
       "id": "huazhu_ir",
@@ -218,18 +423,48 @@
       "group": "华住集团",
       "enabled": true,
       "language": "zh",
-      "homepage": "https://ir.huazhu.com/news-releases",
-      "list_url": "https://ir.huazhu.com/news-releases",
-      "note": "华住投资者关系新闻发布",
-      "pagination": { "enabled": true, "max_pages": 5, "url_pattern": "" },
-      "selectors": { "list": "", "item": "", "title": "", "link": "", "date": "" },
+      "homepage": "https://ir.hworld.com/zh-hans/news-and-events/press-releases",
+      "list_url": "https://ir.hworld.com/zh-hans/news-and-events/press-releases",
+      "note": "华住 IR 已迁移 hworld.com（访问常超时，失败自动跳过）",
+      "pagination": {
+        "enabled": true,
+        "max_pages": 5,
+        "url_pattern": ""
+      },
+      "selectors": {
+        "list": "",
+        "item": "",
+        "title": "",
+        "link": "",
+        "date": ""
+      },
       "ai_probe": true,
-      "request_interval_ms": [1200, 2200],
-      "time_break": { "enabled": true },
-      "china_filter": { "enabled": true, "regions": ["中国大陆", "港澳"] },
+      "request_interval_ms": [
+        1200,
+        2200
+      ],
+      "time_break": {
+        "enabled": true
+      },
+      "china_filter": {
+        "enabled": true,
+        "regions": [
+          "中国大陆",
+          "港澳"
+        ]
+      },
       "media_filter": null,
-      "keywords": ["开业", "签约", "酒店", "新项目"],
-      "403_policy": { "skip_after": 3, "cooldown_min": 1440, "auto_skip": true }
+      "keywords": [
+        "开业",
+        "签约",
+        "酒店",
+        "新项目"
+      ],
+      "403_policy": {
+        "skip_after": 3,
+        "cooldown_min": 1440,
+        "auto_skip": true
+      }
     },
     {
       "id": "bthhotels",
@@ -241,15 +476,45 @@
       "homepage": "https://www.bthhotels.com/News/Index",
       "list_url": "https://www.bthhotels.com/News/Index",
       "note": "首旅如家酒店集团新闻",
-      "pagination": { "enabled": true, "max_pages": 5, "url_pattern": "" },
-      "selectors": { "list": "", "item": "", "title": "", "link": "", "date": "" },
+      "pagination": {
+        "enabled": true,
+        "max_pages": 5,
+        "url_pattern": ""
+      },
+      "selectors": {
+        "list": "",
+        "item": "",
+        "title": "",
+        "link": "",
+        "date": ""
+      },
       "ai_probe": true,
-      "request_interval_ms": [1200, 2200],
-      "time_break": { "enabled": true },
-      "china_filter": { "enabled": true, "regions": ["中国大陆", "港澳"] },
+      "request_interval_ms": [
+        1200,
+        2200
+      ],
+      "time_break": {
+        "enabled": true
+      },
+      "china_filter": {
+        "enabled": true,
+        "regions": [
+          "中国大陆",
+          "港澳"
+        ]
+      },
       "media_filter": null,
-      "keywords": ["开业", "签约", "酒店", "新项目"],
-      "403_policy": { "skip_after": 3, "cooldown_min": 1440, "auto_skip": true }
+      "keywords": [
+        "开业",
+        "签约",
+        "酒店",
+        "新项目"
+      ],
+      "403_policy": {
+        "skip_after": 3,
+        "cooldown_min": 1440,
+        "auto_skip": true
+      }
     },
     {
       "id": "traveldaily",
@@ -258,21 +523,65 @@
       "group": "行业媒体",
       "enabled": true,
       "language": "zh",
-      "homepage": "https://www.traveldaily.cn/news/list?category=hotel",
-      "list_url": "https://www.traveldaily.cn/news/list?category=hotel",
-      "note": "酒店投资/新建/签约/开业栏目（反爬较严格，已单独调慢间隔）",
-      "pagination": { "enabled": true, "max_pages": 5, "url_pattern": "" },
-      "selectors": { "list": "", "item": "", "title": "", "link": "", "date": "" },
-      "ai_probe": true,
-      "request_interval_ms": [4000, 6000],
-      "time_break": { "enabled": true },
-      "china_filter": { "enabled": true, "regions": ["中国大陆", "港澳"] },
-      "media_filter": {
-        "keep": ["新项目签约", "落地", "拟建", "开业", "物业合作"],
-        "drop": ["人事变动", "财报", "行业点评", "招聘", "任命", "业绩", "白皮书"]
+      "homepage": "https://www.traveldaily.cn/",
+      "list_url": "https://www.traveldaily.cn/",
+      "note": "环球旅讯首页（含酒店签约/开业资讯，反爬严格已调慢）",
+      "pagination": {
+        "enabled": true,
+        "max_pages": 5,
+        "url_pattern": ""
       },
-      "keywords": ["酒店 签约", "酒店 开业", "酒店 拟建", "酒店 项目"],
-      "403_policy": { "skip_after": 2, "cooldown_min": 2880, "auto_skip": true }
+      "selectors": {
+        "list": "",
+        "item": "",
+        "title": "",
+        "link": "",
+        "date": ""
+      },
+      "ai_probe": true,
+      "request_interval_ms": [
+        4000,
+        6000
+      ],
+      "time_break": {
+        "enabled": true
+      },
+      "china_filter": {
+        "enabled": true,
+        "regions": [
+          "中国大陆",
+          "港澳"
+        ]
+      },
+      "media_filter": {
+        "keep": [
+          "新项目签约",
+          "落地",
+          "拟建",
+          "开业",
+          "物业合作"
+        ],
+        "drop": [
+          "人事变动",
+          "财报",
+          "行业点评",
+          "招聘",
+          "任命",
+          "业绩",
+          "白皮书"
+        ]
+      },
+      "keywords": [
+        "酒店 签约",
+        "酒店 开业",
+        "酒店 拟建",
+        "酒店 项目"
+      ],
+      "403_policy": {
+        "skip_after": 2,
+        "cooldown_min": 2880,
+        "auto_skip": true
+      }
     },
     {
       "id": "jiuguanfinance",
@@ -281,21 +590,63 @@
       "group": "行业媒体",
       "enabled": true,
       "language": "zh",
-      "homepage": "https://www.jiuguanfinance.com/",
-      "list_url": "https://www.jiuguanfinance.com/",
-      "note": "酒店管理行业财经资讯",
-      "pagination": { "enabled": true, "max_pages": 5, "url_pattern": "" },
-      "selectors": { "list": "", "item": "", "title": "", "link": "", "date": "" },
-      "ai_probe": true,
-      "request_interval_ms": [3000, 5000],
-      "time_break": { "enabled": true },
-      "china_filter": { "enabled": true, "regions": ["中国大陆", "港澳"] },
-      "media_filter": {
-        "keep": ["新项目签约", "落地", "拟建", "开业", "物业合作"],
-        "drop": ["人事变动", "财报", "行业点评", "招聘", "任命", "业绩"]
+      "homepage": "http://www.chmfe.com/",
+      "list_url": "http://www.chmfe.com/",
+      "note": "酒管财经（域名 chmfe.com，强制 gzip，已支持解压）",
+      "pagination": {
+        "enabled": true,
+        "max_pages": 5,
+        "url_pattern": ""
       },
-      "keywords": ["酒店 签约", "酒店 开业", "酒店 项目"],
-      "403_policy": { "skip_after": 2, "cooldown_min": 2880, "auto_skip": true }
+      "selectors": {
+        "list": "",
+        "item": "",
+        "title": "",
+        "link": "",
+        "date": ""
+      },
+      "ai_probe": true,
+      "request_interval_ms": [
+        3000,
+        5000
+      ],
+      "time_break": {
+        "enabled": true
+      },
+      "china_filter": {
+        "enabled": true,
+        "regions": [
+          "中国大陆",
+          "港澳"
+        ]
+      },
+      "media_filter": {
+        "keep": [
+          "新项目签约",
+          "落地",
+          "拟建",
+          "开业",
+          "物业合作"
+        ],
+        "drop": [
+          "人事变动",
+          "财报",
+          "行业点评",
+          "招聘",
+          "任命",
+          "业绩"
+        ]
+      },
+      "keywords": [
+        "酒店 签约",
+        "酒店 开业",
+        "酒店 项目"
+      ],
+      "403_policy": {
+        "skip_after": 2,
+        "cooldown_min": 2880,
+        "auto_skip": true
+      }
     },
     {
       "id": "hotelscn",
@@ -304,21 +655,64 @@
       "group": "行业媒体",
       "enabled": true,
       "language": "zh",
-      "homepage": "https://www.hotelscn.com/news",
-      "list_url": "https://www.hotelscn.com/news",
-      "note": "酒店行业新闻资讯",
-      "pagination": { "enabled": true, "max_pages": 5, "url_pattern": "" },
-      "selectors": { "list": "", "item": "", "title": "", "link": "", "date": "" },
-      "ai_probe": true,
-      "request_interval_ms": [3000, 5000],
-      "time_break": { "enabled": true },
-      "china_filter": { "enabled": true, "regions": ["中国大陆", "港澳"] },
-      "media_filter": {
-        "keep": ["新项目签约", "落地", "拟建", "开业", "物业合作"],
-        "drop": ["人事变动", "财报", "行业点评", "招聘", "任命", "业绩"]
+      "homepage": "http://hoteln.cn/index.html",
+      "list_url": "http://hoteln.cn/Html/HotelNews.html?classId=1&subclassid=102",
+      "note": "酒店高参（域名 hoteln.cn；列表页 JS 渲染，规则可能采不到）",
+      "pagination": {
+        "enabled": true,
+        "max_pages": 5,
+        "url_pattern": ""
       },
-      "keywords": ["酒店 签约", "酒店 开业", "酒店 拟建", "酒店 项目"],
-      "403_policy": { "skip_after": 2, "cooldown_min": 2880, "auto_skip": true }
+      "selectors": {
+        "list": "",
+        "item": "",
+        "title": "",
+        "link": "",
+        "date": ""
+      },
+      "ai_probe": true,
+      "request_interval_ms": [
+        3000,
+        5000
+      ],
+      "time_break": {
+        "enabled": true
+      },
+      "china_filter": {
+        "enabled": true,
+        "regions": [
+          "中国大陆",
+          "港澳"
+        ]
+      },
+      "media_filter": {
+        "keep": [
+          "新项目签约",
+          "落地",
+          "拟建",
+          "开业",
+          "物业合作"
+        ],
+        "drop": [
+          "人事变动",
+          "财报",
+          "行业点评",
+          "招聘",
+          "任命",
+          "业绩"
+        ]
+      },
+      "keywords": [
+        "酒店 签约",
+        "酒店 开业",
+        "酒店 拟建",
+        "酒店 项目"
+      ],
+      "403_policy": {
+        "skip_after": 2,
+        "cooldown_min": 2880,
+        "auto_skip": true
+      }
     },
     {
       "id": "meadin",
@@ -327,21 +721,65 @@
       "group": "行业媒体",
       "enabled": true,
       "language": "zh",
-      "homepage": "https://www.meadin.com/hotel/",
-      "list_url": "https://www.meadin.com/hotel/",
-      "note": "迈点网酒店投资栏目（反爬较严格，已单独调慢间隔）",
-      "pagination": { "enabled": true, "max_pages": 5, "url_pattern": "" },
-      "selectors": { "list": "", "item": "", "title": "", "link": "", "date": "" },
-      "ai_probe": true,
-      "request_interval_ms": [4000, 6000],
-      "time_break": { "enabled": true },
-      "china_filter": { "enabled": true, "regions": ["中国大陆", "港澳"] },
-      "media_filter": {
-        "keep": ["新项目签约", "落地", "拟建", "开业", "物业合作"],
-        "drop": ["人事变动", "财报", "行业点评", "招聘", "任命", "业绩", "榜单"]
+      "homepage": "https://www.meadin.com/zx",
+      "list_url": "https://www.meadin.com/zx",
+      "note": "迈点网资讯（zx 列表，分页 /zx/{page}，反爬严格已调慢）",
+      "pagination": {
+        "enabled": true,
+        "max_pages": 5,
+        "url_pattern": "https://www.meadin.com/zx/{page}"
       },
-      "keywords": ["酒店 签约", "酒店 开业", "酒店 拟建", "酒店 项目"],
-      "403_policy": { "skip_after": 2, "cooldown_min": 2880, "auto_skip": true }
+      "selectors": {
+        "list": "",
+        "item": "",
+        "title": "",
+        "link": "",
+        "date": ""
+      },
+      "ai_probe": true,
+      "request_interval_ms": [
+        4000,
+        6000
+      ],
+      "time_break": {
+        "enabled": true
+      },
+      "china_filter": {
+        "enabled": true,
+        "regions": [
+          "中国大陆",
+          "港澳"
+        ]
+      },
+      "media_filter": {
+        "keep": [
+          "新项目签约",
+          "落地",
+          "拟建",
+          "开业",
+          "物业合作"
+        ],
+        "drop": [
+          "人事变动",
+          "财报",
+          "行业点评",
+          "招聘",
+          "任命",
+          "业绩",
+          "榜单"
+        ]
+      },
+      "keywords": [
+        "酒店 签约",
+        "酒店 开业",
+        "酒店 拟建",
+        "酒店 项目"
+      ],
+      "403_policy": {
+        "skip_after": 2,
+        "cooldown_min": 2880,
+        "auto_skip": true
+      }
     }
   ],
   "scoring": {
@@ -364,14 +802,20 @@
   },
   "dedup": {
     "primary_key": "detail_url",
-    "secondary_keys": ["title", "publish_date"],
+    "secondary_keys": [
+      "title",
+      "publish_date"
+    ],
     "rule": "以详情 url 作为唯一 key；url 不变的页面叠加【标题+发布日期】二次去重",
     "id_same": "version + 1",
     "name_fingerprint_similarity": 0.92
   },
   "china_only": {
     "enabled": true,
-    "regions": ["中国大陆", "港澳"],
+    "regions": [
+      "中国大陆",
+      "港澳"
+    ],
     "rule": "AI 解析详情页时过滤非中国地区项目，只保留中国大陆（含港澳）酒店项目；被过滤的海外新闻在日志标记，不存入列表"
   },
   "media_extra_filter": {
