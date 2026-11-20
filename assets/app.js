@@ -8,7 +8,7 @@
 "use strict";
 
 var LS_URL = "hotelintel.ghUrl";
-var state = { data: [], source: "none", updated: null, sort: "lead" };
+var state = { data: [], source: "none", updated: null, sort: "lead", view: "list" };
 var $ = function(id){ return document.getElementById(id); };
 var listEl = $("list");
 var DEMO_KEY = "hotelintel.demo.v1";
@@ -62,7 +62,7 @@ function esc(s){
     .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
 function stageClass(st){
-  var m = { "拟建":"stage-p", "签约":"stage-p", "在建":"stage-c", "试营业":"stage-t", "已开业":"stage-o" };
+  var m = { "拟建":"stage-p", "签约":"stage-p", "筹备中":"stage-p", "在建":"stage-c", "试营业":"stage-t", "已开业":"stage-o", "建筑标已招":"stage-b" };
   return m[st] || "";
 }
 function tierClass(t){ return t === "奢华" ? "tier-lux" : ""; }
@@ -103,7 +103,7 @@ function renderSources(sources){
 }
 
 function cardHtml(h){
-  var st = h.stage || "待确认";
+  var st = h.phase || h.stage || "待确认";
   var cred = (h.credibility !== undefined && h.credibility !== null) ? Number(h.credibility) : null;
   var lead = (h.lead_score !== undefined && h.lead_score !== null) ? Number(h.lead_score) : null;
   var loc = [h.province, h.city, h.district].filter(Boolean).join("·") || "地区未知";
@@ -155,6 +155,7 @@ function filterData(){
   var kw = ($("f-keyword").value || "").trim().toLowerCase();
   var city = ($("f-city").value || "").trim().toLowerCase();
   var stage = $("f-stage").value;
+  var phase = $("f-phase").value;
   var tier = $("f-tier").value;
   var status = $("f-status").value;
   var invMin = parseFloat($("f-inv-min").value);
@@ -174,6 +175,7 @@ function filterData(){
       if (c.indexOf(city) === -1) return false;
     }
     if (stage && (h.stage||"待确认") !== stage) return false;
+    if (phase && (h.phase||"待确认") !== phase) return false;
     if (tier && h.tier !== tier) return false;
     if (status && h.status !== status) return false;
     var inv = parseFloat(h.investment_yi);
@@ -221,6 +223,7 @@ function renderStats(all){
 }
 
 function renderList(){
+  if (state.view === "city") { renderCityView(); return; }
   var filtered = filterData();
   var sorted = sortData(filtered);
   $("result-count").textContent = "共 " + sorted.length + " 条";
@@ -238,6 +241,83 @@ function renderList(){
     return;
   }
   listEl.innerHTML = sorted.map(cardHtml).join("");
+}
+
+/* ---------- 按城市视图 ---------- */
+var PHASE_ORDER = ["已开业", "筹备中", "在建", "建筑标已招", "待确认"];
+
+function cityItemHtml(h){
+  var ph = h.phase || h.stage || "待确认";
+  var meta = [];
+  if (h.brand) meta.push('<span class="ci-brand">'+esc(h.brand)+'</span>');
+  if (h.tier) meta.push(esc(h.tier));
+  if (h.rooms) meta.push(esc(h.rooms)+" 间");
+  if (h.expected_open) meta.push("预计 "+esc(h.expected_open));
+  if (h.actual_open) meta.push("开业 "+esc(h.actual_open));
+  var name = esc(h.name || "未命名项目");
+  return '<div class="city-item">' +
+    '<span class="ci-name">'+name+'</span>' +
+    '<span class="ci-meta"><span class="badge '+stageClass(ph)+'">'+esc(ph)+'</span>' + meta.join('<span class="ci-sep">·</span>') + '</span>' +
+  '</div>';
+}
+
+function renderCityView(){
+  var filtered = filterData();
+  var sorted = sortData(filtered);
+  $("result-count").textContent = "共 " + sorted.length + " 条";
+  if (!state.data.length) {
+    listEl.innerHTML =
+      '<div class="empty"><div class="big">🏨</div><h3>还没有数据</h3>' +
+      '<p>系统每晚 23:30 自动采集；当前情报库为空。你可以先「载入演示数据」预览界面，或配置数据源 / 导入 JSON。</p>' +
+      '<div class="actions"><button class="btn primary" type="button" data-action="demo">载入演示数据</button>' +
+      '<button class="btn" type="button" data-action="source">配置数据源</button></div></div>';
+    return;
+  }
+  if (!sorted.length) {
+    listEl.innerHTML = '<div class="empty"><div class="big">🔍</div><h3>没有符合筛选条件的项目</h3>' +
+      '<p>请调整筛选条件后重试。</p></div>';
+    return;
+  }
+
+  // 按城市分组
+  var byCity = {};
+  sorted.forEach(function(h){
+    var c = (h.city || "未标城市").trim() || "未标城市";
+    (byCity[c] = byCity[c] || []).push(h);
+  });
+  var cityNames = Object.keys(byCity).sort(function(a,b){
+    if (a === "未标城市") return 1;
+    if (b === "未标城市") return -1;
+    return byCity[b].length - byCity[a].length;
+  });
+
+  var html = cityNames.map(function(city){
+    var arr = byCity[city];
+    // 城市内按细分阶段分组
+    var byPhase = {};
+    arr.forEach(function(h){
+      var p = h.phase || h.stage || "待确认";
+      (byPhase[p] = byPhase[p] || []).push(h);
+    });
+    var phaseKeys = PHASE_ORDER.filter(function(p){ return byPhase[p]; });
+    Object.keys(byPhase).forEach(function(p){
+      if (phaseKeys.indexOf(p) === -1) phaseKeys.push(p);
+    });
+    var summary = phaseKeys.map(function(p){ return esc(p)+" "+byPhase[p].length; }).join(" · ");
+    var blocks = phaseKeys.map(function(p){
+      return '<div class="phase-block">' +
+        '<div class="phase-title"><span class="badge '+stageClass(p)+'">'+esc(p)+'</span><span class="phase-count">'+byPhase[p].length+' 个</span></div>' +
+        '<div class="phase-list">'+byPhase[p].map(cityItemHtml).join("")+'</div>' +
+      '</div>';
+    }).join("");
+    return '<section class="panel city-group">' +
+      '<div class="city-head"><h3>'+esc(city)+'</h3><span class="city-count">'+arr.length+' 个项目</span></div>' +
+      '<div class="city-phase-summary">'+summary+'</div>' +
+      blocks +
+    '</section>';
+  }).join("");
+
+  listEl.innerHTML = html;
 }
 
 function updateMeta(){
@@ -437,9 +517,25 @@ $("btn-reset").addEventListener("click", function(){
   ["f-keyword","f-city","f-inv-min","f-inv-max","f-rooms-min","f-rooms-max","f-cred","f-lead"].forEach(function(id){
     $(id).value = "";
   });
-  ["f-stage","f-tier","f-status"].forEach(function(id){ $(id).value = ""; });
+  ["f-stage","f-phase","f-tier","f-status"].forEach(function(id){ $(id).value = ""; });
   $("f-sort").value = "lead";
   state.sort = "lead";
+  renderList();
+});
+$("view-list").addEventListener("click", function(){
+  state.view = "list";
+  $("view-list").classList.add("active");
+  $("view-city").classList.remove("active");
+  $("view-list").setAttribute("aria-selected","true");
+  $("view-city").setAttribute("aria-selected","false");
+  renderList();
+});
+$("view-city").addEventListener("click", function(){
+  state.view = "city";
+  $("view-city").classList.add("active");
+  $("view-list").classList.remove("active");
+  $("view-city").setAttribute("aria-selected","true");
+  $("view-list").setAttribute("aria-selected","false");
   renderList();
 });
 $("btn-copy").addEventListener("click", function(){
@@ -470,7 +566,7 @@ function fallbackCopy(text){
   } catch(e){}
 }
 
-["f-keyword","f-city","f-stage","f-tier","f-status","f-inv-min","f-inv-max","f-rooms-min","f-rooms-max","f-cred","f-lead"].forEach(function(id){
+["f-keyword","f-city","f-stage","f-phase","f-tier","f-status","f-inv-min","f-inv-max","f-rooms-min","f-rooms-max","f-cred","f-lead"].forEach(function(id){
   $(id).addEventListener("input", renderList);
   $(id).addEventListener("change", renderList);
 });
