@@ -158,6 +158,7 @@ function filterData(){
   var phase = $("f-phase").value;
   var tier = $("f-tier").value;
   var status = $("f-status").value;
+  var group = $("f-group").value;
   var invMin = parseFloat($("f-inv-min").value);
   var invMax = parseFloat($("f-inv-max").value);
   var roomsMin = parseFloat($("f-rooms-min").value);
@@ -178,6 +179,7 @@ function filterData(){
     if (phase && (h.phase||"待确认") !== phase) return false;
     if (tier && h.tier !== tier) return false;
     if (status && h.status !== status) return false;
+    if (group && h.group !== group) return false;
     var inv = parseFloat(h.investment_yi);
     if (!isNaN(inv)) {
       if (!isNaN(invMin) && inv < invMin) return false;
@@ -339,9 +341,24 @@ function setState(data, source, updated){
   state.data = Array.isArray(data) ? data : [];
   state.source = source;
   state.updated = updated || new Date().toISOString();
+  fillGroupOptions();
   renderStats(state.data);
   renderList();
   updateMeta();
+}
+
+function fillGroupOptions(){
+  var sel = $("f-group");
+  if (!sel) return;
+  var cur = sel.value;
+  var groups = {};
+  (state.data || []).forEach(function(h){ if (h.group) groups[h.group] = 1; });
+  var keys = Object.keys(groups).sort();
+  var html = '<option value="">全部集团</option>' + keys.map(function(g){
+    return '<option value="'+esc(g)+'">'+esc(g)+'</option>';
+  }).join("");
+  sel.innerHTML = html;
+  sel.value = keys.indexOf(cur) !== -1 ? cur : "";
 }
 
 /* ---------- 数据加载 ---------- */
@@ -525,7 +542,7 @@ $("btn-reset").addEventListener("click", function(){
   ["f-keyword","f-city","f-inv-min","f-inv-max","f-rooms-min","f-rooms-max","f-cred","f-lead"].forEach(function(id){
     $(id).value = "";
   });
-  ["f-stage","f-phase","f-tier","f-status"].forEach(function(id){ $(id).value = ""; });
+  ["f-stage","f-phase","f-tier","f-status","f-group"].forEach(function(id){ $(id).value = ""; });
   $("f-sort").value = "lead";
   state.sort = "lead";
   renderList();
@@ -614,7 +631,7 @@ function exportExcel(){
   XLSX.writeFile(wb, "hotel-projects-" + stamp + ".xlsx");
 }
 
-["f-keyword","f-city","f-stage","f-phase","f-tier","f-status","f-inv-min","f-inv-max","f-rooms-min","f-rooms-max","f-cred","f-lead"].forEach(function(id){
+["f-keyword","f-city","f-stage","f-phase","f-tier","f-status","f-group","f-inv-min","f-inv-max","f-rooms-min","f-rooms-max","f-cred","f-lead"].forEach(function(id){
   $(id).addEventListener("input", renderList);
   $(id).addEventListener("change", renderList);
 });
