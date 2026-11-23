@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOW 信号盯标 · 全国酒店项目情报官</title>
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
+<style>
+:root{
+  --canvas:#f5f2ec;--surface:#ffffff;--surface-2:#efece4;
+  --ink:#1d2a29;--ink-2:#55625f;--ink-3:#8a9490;--line:#e2ddd2;
+  --brand:#123b3a;--brand-2:#1c5552;--brand-ink:#ffffff;
+  --accent:#b8892b;--accent-ink:#2a2008;
+  --ok:#2e7d5b;--warn:#b06a1f;--bad:#a8483a;--info:#35618f;
+  --radius:10px;--radius-sm:7px;
+  --shadow:0 1px 2px rgba(29,42,41,.06),0 8px 24px -18px rgba(29,42,41,.25);
+  --font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --focus:#0f7a70;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.6}
+a{color:var(--brand-2);text-underline-offset:2px}
+a:focus-visible,button:focus-visible{outline:3px solid color-mix(in srgb,var(--focus) 45%,transparent);outline-offset:2px;border-radius:4px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* 顶栏 */
+.topbar{background:linear-gradient(120deg,var(--brand) 0%,var(--brand-2) 100%);color:var(--brand-ink);padding:clamp(18px,4vw,30px) clamp(16px,4vw,40px) 22px}
+.topbar-inner{max-width:1240px;margin:0 auto}
+.brand-row{display:flex;flex-wrap:wrap;align-items:center;gap:14px;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-mark{width:44px;height:44px;flex:none;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
+.brand h1{margin:0;font-size:clamp(19px,3vw,25px);line-height:1.25}
+.brand .sub{color:rgba(255,255,255,.78);font-size:13px;margin-top:2px}
+.back-link{color:rgba(255,255,255,.92);font-size:13px;text-decoration:none;border:1px solid rgba(255,255,255,.35);border-radius:var(--radius-sm);padding:7px 12px;display:inline-block}
+.back-link:hover{background:rgba(255,255,255,.12)}
+.meta-strip{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:rgba(255,255,255,.9);margin-top:16px;border-top:1px solid rgba(255,255,255,.16);padding-top:12px}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#9fd8b8;margin-right:5px;vertical-align:1px}
+
+.wrap{max-width:1240px;margin:0 auto;padding:clamp(16px,3vw,28px) clamp(16px,4vw,40px) 48px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+
+/* 项目卡片 */
+.section-title{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:28px 0 14px}
+.section-title h2{margin:0;font-size:18px}
+.section-title .hint{font-size:12.5px;color:var(--ink-3)}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.proj-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.proj-head{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;justify-content:space-between}
+.proj-head h3{margin:0;font-size:15.5px;font-weight:700;line-height:1.35;flex:1 1 200px;min-width:0}
+.proj-badge{font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.badge-new{background:#e9f3ec;color:var(--ok)}
+.badge-idle{background:var(--surface-2);color:var(--ink-3)}
+.proj-meta{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13px}
+.proj-meta dt{color:var(--ink-3);white-space:nowrap}
+.proj-meta dd{margin:0;color:var(--ink)}
+.proj-latest{font-size:13px;border-top:1px dashed var(--line);padding-top:10px;color:var(--ink-2)}
+.proj-latest b{color:var(--ink)}
+.latest-empty{color:var(--ink-3);font-style:italic}
+
+/* 周报 */
+.report-block{margin-top:14px}
+.report-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.report-head h3{margin:0;font-size:15px}
+.report-date{font-size:12.5px;color:var(--ink-2);font-family:var(--mono)}
+.report-body{padding:6px 0}
+.report-empty{padding:26px 18px;text-align:center;color:var(--ink-3);font-size:13.5px}
+.proj-section{border-bottom:1px solid var(--line);padding:14px 16px}
+.proj-section:last-child{border-bottom:none}
+.proj-section h4{margin:0 0 4px;font-size:14.5px}
+.proj-status{font-size:12.5px;color:var(--ok);margin:0 0 10px}
+.item{margin:10px 0;padding:10px 12px;background:var(--surface-2);border-radius:var(--radius-sm);border:1px solid var(--line)}
+.item .t{font-weight:600;font-size:13.5px}
+.item .s{font-size:13px;color:var(--ink-2);margin-top:3px}
+.item .m{font-size:12px;color:var(--ink-3);margin-top:4px;display:flex;flex-wrap:wrap;gap:6px 14px}
+.item a{word-break:break-all}
+
+/* 历史 */
+.history-list{display:grid;gap:8px}
+.hist-item{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface)}
+.hist-item .d{font-family:var(--mono);font-size:13px;font-weight:600}
+.hist-item .s{font-size:12.5px;color:var(--ink-2);flex:1 1 260px;min-width:0}
+.hist-item .n{font-size:12px;color:var(--ink-3);white-space:nowrap}
+
+/* 状态条 */
+.loading{padding:40px 18px;text-align:center;color:var(--ink-3)}
+.error{padding:26px 18px;text-align:center;color:var(--bad);font-size:13.5px}
+
+footer{margin-top:36px;border-top:1px solid var(--line);padding:18px clamp(16px,4vw,40px) 30px;color:var(--ink-3);font-size:12.5px;max-width:1240px;margin-left:auto;margin-right:auto}
+.foot-links{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:6px}
+
+@media (max-width:640px){
+  .card-grid{grid-template-columns:1fr}
+  .report-head{flex-direction:column;align-items:flex-start}
+}
+@media print{
+  .topbar{background:var(--brand);color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .proj-card,.item{break-inside:avoid}
+  .back-link{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-row">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">NOW</div>
+        <div>
+          <h1>NOW 信号 · 酒店项目周更盯标</h1>
+          <div class="sub">3 个重点在建/筹建项目 · 每周自动搜索招投标 / 工程进展 / 新闻动态</div>
+        </div>
+      </div>
+      <a class="back-link" href="index.html">← 返回项目总库</a>
+    </div>
+    <div class="meta-strip">
+      <span><span class="status-dot" id="live-dot"></span><span id="live-text">加载中…</span></span>
+      <span>盯标项目：<b>3</b> 个</span>
+      <span>更新频率：<b>每周</b></span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="app">
+  <div class="loading" id="loading">正在加载盯标数据…</div>
+  <div class="error hidden" id="error"></div>
+
+  <div id="content" class="hidden">
+    <!-- 项目卡片 -->
+    <div class="section-title">
+      <h2>盯标项目</h2>
+      <span class="hint">点击项目可直达其动态；AV / 弱电参与机会见各项目状态</span>
+    </div>
+    <div class="card-grid" id="card-grid"></div>
+
+    <!-- 最新周报 -->
+    <div class="section-title">
+      <h2>最新周报</h2>
+      <span class="hint" id="latest-date"></span>
+    </div>
+    <section class="panel report-block">
+      <div class="report-head">
+        <h3>动态摘要</h3>
+        <span class="report-date" id="report-date"></span>
+      </div>
+      <div class="report-body" id="report-body"></div>
+    </section>
+
+    <!-- 历史周报 -->
+    <div class="section-title">
+      <h2>历史周报</h2>
+      <span class="hint">每周自动归档</span>
+    </div>
+    <section class="panel">
+      <div class="history-list" id="history-list"></div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="disclaimer">⚠️ 本页数据由自动化脚本每周从公开信息源搜索整理，仅供决策参考，<strong>以官方公告为准</strong>。「本周无新动态」表示监控周期内未检索到公开新讯息，不代表项目无进展。</div>
+  <div class="foot-links">
+    <span>全国酒店项目情报官 · NOW 信号盯标</span>
+    <span>数据：data/now_tracking.json</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var esc = function(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  };
+  var fmtDate = function(d){
+    if(!d) return '';
+    return String(d).slice(0,10);
+  };
+
+  function renderCards(data){
+    var grid = $('card-grid');
+    grid.innerHTML = data.projects.map(function(p){
+      var hasLatest = p.latest && p.latest.items && p.latest.items.length > 0;
+      var badge = hasLatest
+        ? '<span class="proj-badge badge-new">本周有动态</span>'
+        : '<span class="proj-badge badge-idle">本周无新动态</span>';
+      var latestHtml = hasLatest
+        ? p.latest.items.slice(0,2).map(function(it){
+            var t = esc(it.title); var u = it.url ? esc(it.url) : '';
+            return '<div class="item"><div class="t">' + (u ? '<a href="' + u + '" target="_blank" rel="noopener">' + t + '</a>' : t) + '</div>'
+              + (it.snippet ? '<div class="s">' + esc(it.snippet).slice(0,120) + (esc(it.snippet).length>120?'…':'') + '</div>' : '')
+              + (it.publish_time ? '<div class="m"><span>' + fmtDate(it.publish_time) + '</span></div>' : '')
+              + '</div>';
+          }).join('')
+        : '<div class="latest-empty">本周未检索到公开新讯息</div>';
+      var rows = [
+        ['位置', p.location], ['业主', p.owner], ['投资', p.investment]
+      ];
+      if(p.rooms) rows.push(['规模', p.rooms]);
+      if(p.designer) rows.push(['设计', p.designer]);
+      if(p.builder) rows.push(['施工', p.builder]);
+      var meta = rows.map(function(r){
+        return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>';
+      }).join('');
+      return '<article class="proj-card">'
+        + '<div class="proj-head"><h3>' + esc(p.name) + '</h3>' + badge + '</div>'
+        + '<dl class="proj-meta">' + meta + '</dl>'
+        + '<div class="proj-latest"><b>最新动态：</b>' + latestHtml + '</div>'
+        + '</article>';
+    }).join('');
+  }
+
+  function renderReport(data){
+    var reports = data.reports || [];
+    var latest = reports[0];
+    if(!latest){
+      $('report-body').innerHTML = '<div class="report-empty">暂无周报数据，等待首次自动盯标。</div>';
+      $('report-date').textContent = '';
+      $('latest-date').textContent = '';
+      return;
+    }
+    $('report-date').textContent = latest.date + ' 周报';
+    $('latest-date').textContent = '生成于 ' + latest.generated_at;
+
+    var byProj = latest.projects || [];
+    if(!byProj.length){
+      $('report-body').innerHTML = '<div class="report-empty">' + esc(latest.summary || '本周无新动态') + '</div>';
+      return;
+    }
+    var html = byProj.map(function(ps){
+      var items = (ps.items || []).map(function(it){
+        var t = esc(it.title); var u = it.url ? esc(it.url) : '';
+        return '<div class="item"><div class="t">' + (u ? '<a href="' + u + '" target="_blank" rel="noopener">' + t + '</a>' : t) + '</div>'
+          + (it.snippet ? '<div class="s">' + esc(it.snippet) + '</div>' : '')
+          + '<div class="m">' + (it.publish_time ? '<span>时间：' + fmtDate(it.publish_time) + '</span>' : '')
+          + (u ? '<span>来源：<a href="' + u + '" target="_blank" rel="noopener">链接</a></span>' : '') + '</div>'
+          + '</div>';
+      }).join('');
+      var status = items
+        ? '<p class="proj-status">✅ 发现 ' + items.length + ' 条新动态</p>'
+        : '<p class="proj-status">⏸️ 本周无新动态</p>';
+      return '<div class="proj-section"><h4>' + esc(ps.name) + '</h4>' + status + (items || '') + '</div>';
+    }).join('');
+    $('report-body').innerHTML = html;
+  }
+
+  function renderHistory(data){
+    var reports = data.reports || [];
+    var list = $('history-list');
+    if(!reports.length){
+      list.innerHTML = '<div class="report-empty">暂无历史周报</div>';
+      return;
+    }
+    list.innerHTML = reports.map(function(r){
+      var n = (r.projects || []).reduce(function(a,p){ return a + ((p.items||[]).length); }, 0);
+      return '<div class="hist-item"><span class="d">' + esc(r.date) + '</span>'
+        + '<span class="s">' + esc(r.summary || '') + '</span>'
+        + '<span class="n">' + n + ' 条动态</span></div>';
+    }).join('');
+  }
+
+  function render(data){
+    $('live-text').textContent = '数据更新：' + (data.updated_at || '未知');
+    var dot = $('live-dot');
+    dot.style.background = '#9fd8b8';
+    renderCards(data);
+    renderReport(data);
+    renderHistory(data);
+    $('loading').classList.add('hidden');
+    $('content').classList.remove('hidden');
+  }
+
+  function fail(msg){
+    $('loading').classList.add('hidden');
+    var e = $('error');
+    e.classList.remove('hidden');
+    e.textContent = '加载盯标数据失败：' + msg + '（请稍后刷新重试）';
+  }
+
+  fetch('data/now_tracking.json', {cache:'no-store'})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(render)
+    .catch(function(err){ fail(err.message); });
+})();
+</script>
+</body>
+</html>
