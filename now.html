@@ -83,6 +83,13 @@ a:focus-visible,button:focus-visible{outline:3px solid color-mix(in srgb,var(--f
 .hist-item .d{font-family:var(--mono);font-size:13px;font-weight:600}
 .hist-item .s{font-size:12.5px;color:var(--ink-2);flex:1 1 260px;min-width:0}
 .hist-item .n{font-size:12px;color:var(--ink-3);white-space:nowrap}
+.proj-head-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}
+.del-btn{font-size:12px;color:var(--bad);background:#fdf3f1;border:1px solid #e5c9c2;border-radius:var(--radius-sm);padding:4px 10px;cursor:pointer;white-space:nowrap}
+.del-btn:hover{background:#f7e3de}
+.restore-btn{font-size:12px;color:var(--ok);background:#eef6f1;border:1px solid #cfe3d6;border-radius:var(--radius-sm);padding:4px 10px;cursor:pointer;white-space:nowrap}
+.restore-btn:hover{background:#dcefe3}
+.stopped-tag{font-style:normal;font-size:11.5px;color:var(--ink-3);background:var(--surface-2);border-radius:999px;padding:2px 8px;margin-left:6px}
+.stopped-note{font-size:12.5px;color:var(--ink-3);padding:10px 16px;border-top:1px solid var(--line)}
 
 /* 状态条 */
 .loading{padding:40px 18px;text-align:center;color:var(--ink-3)}
@@ -136,6 +143,18 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding:18px clamp(16px,
     </div>
     <div class="card-grid" id="card-grid"></div>
 
+    <!-- 已停止跟进 -->
+    <div id="stopped-section" class="hidden">
+      <div class="section-title">
+        <h2>已停止跟进</h2>
+        <span class="hint">信息无效或不再跟进的项目（保存在当前浏览器，可随时恢复）</span>
+      </div>
+      <section class="panel">
+        <div class="history-list" id="stopped-list"></div>
+        <div class="stopped-note">💡 停止跟进状态保存在当前浏览器。如需彻底从每周自动盯标中移除该项目，请告知我同步更新盯标列表。</div>
+      </section>
+    </div>
+
     <!-- 最新周报 -->
     <div class="section-title">
       <h2>最新周报</h2>
@@ -181,9 +200,26 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding:18px clamp(16px,
     return String(d).slice(0,10);
   };
 
+  /* ---- 停止跟进状态（localStorage） ---- */
+  var LS_KEY = 'now_deleted_projects_v1';
+  function getDeleted(){
+    try{ return JSON.parse(localStorage.getItem(LS_KEY)) || []; }catch(e){ return []; }
+  }
+  function saveDeleted(list){
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(list)); }catch(e){}
+  }
+  function isDeleted(name){
+    return getDeleted().some(function(d){ return d.name === name; });
+  }
+
   function renderCards(data){
     var grid = $('card-grid');
-    grid.innerHTML = data.projects.map(function(p){
+    var active = data.projects.filter(function(p){ return !isDeleted(p.name); });
+    if(!active.length){
+      grid.innerHTML = '<div class="report-empty">暂无盯标项目。可在下方「已停止跟进」中恢复，或等待后续新增盯标项目。</div>';
+      return;
+    }
+    grid.innerHTML = active.map(function(p){
       var hasLatest = p.latest && p.latest.items && p.latest.items.length > 0;
       var badge = hasLatest
         ? '<span class="proj-badge badge-new">本周有动态</span>'
@@ -207,10 +243,29 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding:18px clamp(16px,
         return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>';
       }).join('');
       return '<article class="proj-card">'
-        + '<div class="proj-head"><h3>' + esc(p.name) + '</h3>' + badge + '</div>'
+        + '<div class="proj-head"><h3>' + esc(p.name) + '</h3>'
+        + '<span class="proj-head-actions">' + badge
+        + '<button type="button" class="del-btn" data-action="del" data-name="' + esc(p.name) + '">🗑 无效·停止跟进</button></span>'
+        + '</div>'
         + '<dl class="proj-meta">' + meta + '</dl>'
         + '<div class="proj-latest"><b>最新动态：</b>' + latestHtml + '</div>'
         + '</article>';
+    }).join('');
+  }
+
+  function renderStopped(data){
+    var sec = $('stopped-section');
+    var list = $('stopped-list');
+    var deleted = getDeleted();
+    if(!deleted.length){
+      sec.classList.add('hidden');
+      return;
+    }
+    sec.classList.remove('hidden');
+    list.innerHTML = deleted.map(function(d){
+      return '<div class="hist-item"><span class="d">' + esc(d.deleted_at || '') + '</span>'
+        + '<span class="s">' + esc(d.name) + '<em class="stopped-tag">已停止跟进</em></span>'
+        + '<button type="button" class="restore-btn" data-action="restore" data-name="' + esc(d.name) + '">↩ 恢复跟进</button></div>';
     }).join('');
   }
 
@@ -226,7 +281,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding:18px clamp(16px,
     $('report-date').textContent = latest.date + ' 周报';
     $('latest-date').textContent = '生成于 ' + latest.generated_at;
 
-    var byProj = latest.projects || [];
+    var byProj = (latest.projects || []).filter(function(ps){ return !isDeleted(ps.name); });
     if(!byProj.length){
       $('report-body').innerHTML = '<div class="report-empty">' + esc(latest.summary || '本周无新动态') + '</div>';
       return;
@@ -268,6 +323,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding:18px clamp(16px,
     var dot = $('live-dot');
     dot.style.background = '#9fd8b8';
     renderCards(data);
+    renderStopped(data);
     renderReport(data);
     renderHistory(data);
     $('loading').classList.add('hidden');
@@ -280,6 +336,28 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding:18px clamp(16px,
     e.classList.remove('hidden');
     e.textContent = '加载盯标数据失败：' + msg + '（请稍后刷新重试）';
   }
+
+  /* ---- 删除 / 恢复事件委托 ---- */
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('[data-action]');
+    if(!btn) return;
+    var name = btn.getAttribute('data-name');
+    if(!name) return;
+    if(btn.getAttribute('data-action') === 'del'){
+      if(!window.confirm('确认停止跟进「' + name + '」？\n项目将移入「已停止跟进」列表，可随时恢复。')) return;
+      var list = getDeleted();
+      if(!list.some(function(d){ return d.name === name; })){
+        list.push({ name: name, deleted_at: new Date().toISOString().slice(0,10) });
+        saveDeleted(list);
+      }
+    } else if(btn.getAttribute('data-action') === 'restore'){
+      saveDeleted(getDeleted().filter(function(d){ return d.name !== name; }));
+    }
+    window.fetch('data/now_tracking.json', {cache:'no-store'})
+      .then(function(r){ return r.json(); })
+      .then(render)
+      .catch(function(){ render({projects:[],reports:[]}); });
+  });
 
   fetch('data/now_tracking.json', {cache:'no-store'})
     .then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
