@@ -91,6 +91,24 @@ a:focus-visible,button:focus-visible{outline:3px solid color-mix(in srgb,var(--f
 .stopped-tag{font-style:normal;font-size:11.5px;color:var(--ink-3);background:var(--surface-2);border-radius:999px;padding:2px 8px;margin-left:6px}
 .stopped-note{font-size:12.5px;color:var(--ink-3);padding:10px 16px;border-top:1px solid var(--line)}
 
+/* 总包 / 投标机会 */
+.proj-bid{border-top:1px dashed var(--line);padding-top:10px;font-size:13px}
+.proj-bid>span.bid-hd{font-weight:700;color:var(--ink);display:block;margin-bottom:4px}
+.ct-item{font-size:12.5px;color:var(--ink);display:flex;flex-wrap:wrap;gap:0 8px;align-items:baseline;padding:3px 0}
+.ct-item .role{color:var(--ink-3);white-space:nowrap}
+.ct-item .ct-note{font-size:12px;color:var(--ink-3);flex-basis:100%}
+.bid-item{display:flex;flex-wrap:wrap;gap:3px 8px;align-items:baseline;padding:7px 9px;margin:6px 0;background:var(--surface-2);border-radius:var(--radius-sm);border:1px solid var(--line)}
+.bid-item .t{font-weight:600;font-size:13px}
+.bid-stage{font-size:11.5px;font-weight:600;color:var(--warn);background:#faf1e3;border:1px solid #ead9b8;border-radius:999px;padding:1px 8px;white-space:nowrap}
+.bid-platform{font-size:12px;color:var(--ink-3)}
+.bid-note{font-size:12px;color:var(--ink-2);flex-basis:100%}
+.bid-guide{font-size:12.5px;color:var(--ink-2);background:#eef4f3;border-left:3px solid var(--brand-2);padding:8px 10px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin-top:8px}
+.method-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;padding:14px 16px}
+.method-card{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px}
+.method-card .m-no{font-size:12px;font-weight:800;color:var(--accent)}
+.method-card .m-t{font-weight:700;font-size:13.5px;margin:2px 0 4px}
+.method-card .m-d{font-size:12.5px;color:var(--ink-2)}
+
 /* 状态条 */
 .loading{padding:40px 18px;text-align:center;color:var(--ink-3)}
 .error{padding:26px 18px;text-align:center;color:var(--bad);font-size:13.5px}
@@ -118,7 +136,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding:18px clamp(16px,
         <div class="brand-mark" aria-hidden="true">NOW</div>
         <div>
           <h1>NOW 信号 · 酒店项目周更盯标</h1>
-          <div class="sub">3 个重点在建/筹建项目 · 每周自动搜索招投标 / 工程进展 / 新闻动态</div>
+          <div class="sub">3 个重点在建/筹建项目 · 每周自动搜索招投标 / 工程进展 / 新闻动态 · 含总包与投标机会</div>
         </div>
       </div>
       <a class="back-link" href="index.html">← 返回项目总库</a>
@@ -139,9 +157,24 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding:18px clamp(16px,
     <!-- 项目卡片 -->
     <div class="section-title">
       <h2>盯标项目</h2>
-      <span class="hint">点击项目可直达其动态；AV / 弱电参与机会见各项目状态</span>
+      <span class="hint">总包 / 投标机会 / 参与方式见各项目卡片</span>
     </div>
     <div class="card-grid" id="card-grid"></div>
+
+    <!-- 投标参与方法（通用） -->
+    <div class="section-title">
+      <h2>投标参与方法</h2>
+      <span class="hint">通用路径，适用于本页全部盯标项目</span>
+    </div>
+    <section class="panel">
+      <div class="method-grid">
+        <div class="method-card"><div class="m-no">01</div><div class="m-t">公共资源交易平台盯公告</div><div class="m-d">全国平台 ggzy.gov.cn + 各省市公共资源交易网，按「项目名 / 业主名」检索招标公告。</div></div>
+        <div class="method-card"><div class="m-no">02</div><div class="m-t">标讯平台订阅关键词</div><div class="m-d">招标网 / 采招网 / 火标网按「项目名 + 弱电 / 智能化 / AV」订阅，第一时间收标。</div></div>
+        <div class="method-card"><div class="m-no">03</div><div class="m-t">盯工程 / 企查查找甲方</div><div class="m-d">cbi360 盯工程、企查查 / 天眼查查业主、总包、设计院与经办人联系方式。</div></div>
+        <div class="method-card"><div class="m-no">04</div><div class="m-t">设计院上游介入</div><div class="m-d">对接酒店施工图设计院（如华东院），锁定弱电 / AV 点位设计，早期送样入围。</div></div>
+        <div class="method-card"><div class="m-no">05</div><div class="m-t">酒管供应商名录（MBE）</div><div class="m-d">万豪 / 希尔顿 / 洲际 / 雅高等有认可供应商名录，入库才有投标资格；同时联系施工总包做专业分包入围。</div></div>
+      </div>
+    </section>
 
     <!-- 已停止跟进 -->
     <div id="stopped-section" class="hidden">
@@ -242,12 +275,41 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding:18px clamp(16px,
       var meta = rows.map(function(r){
         return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>';
       }).join('');
+
+      /* 总包 / 投标机会 / 参与方式 */
+      var bidHtml = '';
+      var cts = p.contractors || [];
+      if(cts.length){
+        bidHtml += '<div class="proj-bid"><span class="bid-hd">🏗 总包 / 分包</span>'
+          + cts.map(function(c){
+            return '<div class="ct-item"><span class="role">' + esc(c.role) + '：</span><span>' + esc(c.name) + '</span>'
+              + (c.note ? '<span class="ct-note">' + esc(c.note) + '</span>' : '') + '</div>';
+          }).join('') + '</div>';
+      }
+      var bids = p.bid_opportunities || [];
+      if(bids.length){
+        bidHtml += '<div class="proj-bid"><span class="bid-hd">🎯 可参与投标</span>'
+          + bids.map(function(b){
+            var title = b.url
+              ? '<a href="' + esc(b.url) + '" target="_blank" rel="noopener">' + esc(b.title) + '</a>'
+              : esc(b.title);
+            return '<div class="bid-item"><span class="t">' + title + '</span>'
+              + (b.stage ? '<span class="bid-stage">' + esc(b.stage) + '</span>' : '')
+              + (b.platform ? '<span class="bid-platform">' + esc(b.platform) + '</span>' : '')
+              + (b.note ? '<span class="bid-note">' + esc(b.note) + '</span>' : '') + '</div>';
+          }).join('') + '</div>';
+      }
+      if(p.bid_guide){
+        bidHtml += '<div class="bid-guide">💡 参与方式：' + esc(p.bid_guide) + '</div>';
+      }
+
       return '<article class="proj-card">'
         + '<div class="proj-head"><h3>' + esc(p.name) + '</h3>'
         + '<span class="proj-head-actions">' + badge
         + '<button type="button" class="del-btn" data-action="del" data-name="' + esc(p.name) + '">🗑 无效·停止跟进</button></span>'
         + '</div>'
         + '<dl class="proj-meta">' + meta + '</dl>'
+        + bidHtml
         + '<div class="proj-latest"><b>最新动态：</b>' + latestHtml + '</div>'
         + '</article>';
     }).join('');
